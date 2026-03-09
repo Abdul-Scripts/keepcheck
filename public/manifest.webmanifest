@@ -3,7 +3,7 @@
   "short_name": "KeepCheck",
   "description": "Track and manage business checks",
   "id": ".",
-  "start_url": ".",
+  "start_url": "./?source=pwa",
   "scope": ".",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],

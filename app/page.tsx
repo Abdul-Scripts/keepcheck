@@ -12,6 +12,28 @@ import { UserProfile } from "@/types/profile";
 const CHECKS_STORAGE_KEY = "keepcheck-records";
 const PROFILE_STORAGE_KEY = "keepcheck-profile";
 
+function detectStandaloneMode() {
+  if (typeof window === "undefined") return false;
+
+  const nav = window.navigator as Navigator & { standalone?: boolean };
+  const displayModeStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: fullscreen)").matches ||
+    window.matchMedia("(display-mode: minimal-ui)").matches ||
+    window.matchMedia("(display-mode: window-controls-overlay)").matches;
+
+  const launchedFromAndroidApp = document.referrer.startsWith("android-app://");
+  const launchedFromPwaStartUrl =
+    new URLSearchParams(window.location.search).get("source") === "pwa";
+
+  return (
+    displayModeStandalone ||
+    nav.standalone === true ||
+    launchedFromAndroidApp ||
+    launchedFromPwaStartUrl
+  );
+}
+
 export default function Page() {
   const [isReady, setIsReady] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -43,9 +65,7 @@ export default function Page() {
   });
 
   useEffect(() => {
-    const standalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+    const standalone = detectStandaloneMode();
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsStandalone(standalone);
