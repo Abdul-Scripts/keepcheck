@@ -108,6 +108,14 @@ export default function InstallPrompt() {
               : "fadeIn 0.35s ease-out",
           }}
         >
+          <div style={guideHeaderStyle}>
+            <img src="/logo.svg" alt="Keep Check logo" style={guideLogoStyle} />
+            <p style={guideIntroLineStyle}>
+              KeepCheck helps you stay on top of daily checks without missing a
+              step.
+            </p>
+          </div>
+
           <div style={guideTextBoxStyle}>
             <p style={guideTextStyle}>
               Tap the Share button{" "}
@@ -220,9 +228,35 @@ const guideOverlayStyle: React.CSSProperties = {
   height: "100%",
 };
 
+const guideHeaderStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "1.25rem",
+  left: "50%",
+  transform: "translateX(-50%)",
+  width: "min(88vw, 420px)",
+  display: "grid",
+  justifyItems: "center",
+  gap: "0.45rem",
+};
+
+const guideLogoStyle: React.CSSProperties = {
+  width: "60px",
+  height: "60px",
+  borderRadius: "14px",
+  boxShadow: "0 8px 20px rgba(0, 0, 0, 0.28)",
+};
+
+const guideIntroLineStyle: React.CSSProperties = {
+  margin: 0,
+  color: "#ffffff",
+  fontSize: "0.95rem",
+  fontWeight: 600,
+  textAlign: "center",
+};
+
 const guideTextBoxStyle: React.CSSProperties = {
   position: "absolute",
-  top: "6rem",
+  top: "9rem",
   left: "50%",
   transform: "translateX(-50%)",
   width: "min(88vw, 420px)",
