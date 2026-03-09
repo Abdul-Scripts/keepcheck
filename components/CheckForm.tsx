@@ -2,6 +2,7 @@
 
 import { ChangeEvent, SyntheticEvent, useState } from "react";
 import { CheckRecord } from "@/types/check";
+import { generateId } from "@/utils/id";
 
 type CheckFormProps = {
   onAddCheck: (check: CheckRecord) => void;
@@ -40,13 +41,14 @@ export default function CheckForm({ onAddCheck }: CheckFormProps) {
     e.preventDefault();
 
     const newCheck: CheckRecord = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       checkNumber: form.checkNumber,
       recipient: form.recipient,
       amount: form.amount,
       issueDate: form.issueDate,
       memo: form.memo,
       image,
+      status: "pending",
     };
 
     onAddCheck(newCheck);
@@ -84,7 +86,7 @@ export default function CheckForm({ onAddCheck }: CheckFormProps) {
 
       <input
         name="recipient"
-        placeholder="Recipient / Company"
+        placeholder="Company"
         value={form.recipient}
         onChange={handleChange}
         required
