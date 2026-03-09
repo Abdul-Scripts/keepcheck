@@ -109,7 +109,7 @@ export default function InstallPrompt() {
           }}
         >
           <div style={guideHeaderStyle}>
-            <img src="/logo.svg" alt="Keep Check logo" style={guideLogoStyle} />
+            <img src="./logo.svg" alt="Keep Check logo" style={guideLogoStyle} />
             <p style={guideIntroLineStyle}>
               KeepCheck helps you stay on top of daily checks without missing a
               step.
@@ -120,13 +120,13 @@ export default function InstallPrompt() {
             <p style={guideTextStyle}>
               Tap the Share button{" "}
               <img
-                src="/ios-share-icon.svg"
+                src="./ios-share-icon.svg"
                 alt="Share"
                 style={inlineIconStyle}
               />{" "}
               in Safari, then choose &apos;Add to Home Screen&apos;{" "}
               <img
-                src="/plus-square.svg"
+                src="./plus-square.svg"
                 alt="Add to Home Screen"
                 style={inlineIconStyle}
               />
