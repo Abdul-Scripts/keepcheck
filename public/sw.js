@@ -1,10 +1,12 @@
 const CACHE_NAME = "keepcheck-v1";
+const scopeUrl = new URL(self.registration.scope);
+const basePath = scopeUrl.pathname === "/" ? "" : scopeUrl.pathname.replace(/\/$/, "");
 const APP_SHELL = [
-  "/",
-  "/manifest.webmanifest",
-  "/web-app-manifest-192x192.png",
-  "/web-app-manifest-512x512.png",
-  "/apple-touch-icon.png",
+  `${basePath}/`,
+  `${basePath}/manifest.webmanifest`,
+  `${basePath}/web-app-manifest-192x192.png`,
+  `${basePath}/web-app-manifest-512x512.png`,
+  `${basePath}/apple-touch-icon.png`,
 ];
 
 self.addEventListener("install", (event) => {
@@ -59,7 +61,7 @@ self.addEventListener("fetch", (event) => {
           return networkResponse;
         })
         .catch(() => {
-          return caches.match("/");
+          return caches.match(`${basePath}/`);
         });
     })
   );

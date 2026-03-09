@@ -13,18 +13,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 export const metadata: Metadata = {
   title: "KeepCheck",
   description: "Track and manage business checks",
-  manifest: "/manifest.webmanifest",
+  manifest: `${basePath}/manifest.webmanifest`,
   appleWebApp: {
     capable: true,
     title: "KeepCheck",
     statusBarStyle: "default",
   },
   icons: {
-    apple: "/apple-touch-icon.png",
-  }
+    apple: `${basePath}/apple-touch-icon.png`,
+  },
 };
 
 export default function RootLayout({
