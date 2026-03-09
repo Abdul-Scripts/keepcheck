@@ -16,6 +16,11 @@ export default function InstallPrompt() {
       !(window as Window & { MSStream?: unknown }).MSStream
     );
   });
+  const [isChromiumLike] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const ua = navigator.userAgent;
+    return /Chrome|CriOS|Edg|OPR|SamsungBrowser/i.test(ua);
+  });
 
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -55,6 +60,10 @@ export default function InstallPrompt() {
     }, 260);
   }
 
+  function handleRetryCheck() {
+    window.location.reload();
+  }
+
   const isIntro = step === "intro";
 
   return (
@@ -77,7 +86,7 @@ export default function InstallPrompt() {
               : "modalIn 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
-          <div style={iconStyle}>✓</div>
+          <img src="./logo.svg" alt="KeepCheck logo" style={introLogoStyle} />
 
           <h1 style={titleStyle}>Install KeepCheck</h1>
 
@@ -93,6 +102,16 @@ export default function InstallPrompt() {
             <button onClick={goToIosGuide} style={primaryButtonStyle}>
               Show Me How
             </button>
+          ) : isChromiumLike ? (
+            <>
+              <p style={textStyle}>
+                Chrome supports installation. Open the browser menu and choose
+                &apos;Install app&apos; (or &apos;Add to Home screen&apos;).
+              </p>
+              <button onClick={handleRetryCheck} style={secondaryButtonStyle}>
+                Refresh & Check Again
+              </button>
+            </>
           ) : (
             <p style={textStyle}>
               Open this in a supported browser that allows installation.
@@ -122,13 +141,13 @@ export default function InstallPrompt() {
               <img
                 src="./ios-share-icon.svg"
                 alt="Share"
-                style={inlineIconStyle}
+                style={shareIconStyle}
               />{" "}
               in Safari, then choose &apos;Add to Home Screen&apos;{" "}
               <img
                 src="./plus-square.svg"
                 alt="Add to Home Screen"
-                style={inlineIconStyle}
+                style={plusIconStyle}
               />
             </p>
           </div>
@@ -181,18 +200,12 @@ const cardStyle: React.CSSProperties = {
   transform: "translateY(0) scale(1)",
 };
 
-const iconStyle: React.CSSProperties = {
+const introLogoStyle: React.CSSProperties = {
   width: "72px",
   height: "72px",
   margin: "0 auto 1rem auto",
   borderRadius: "20px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "2rem",
-  fontWeight: 700,
-  background: "linear-gradient(135deg, #111827, #374151)",
-  color: "#fff",
+  display: "block",
 };
 
 const titleStyle: React.CSSProperties = {
@@ -219,6 +232,18 @@ const primaryButtonStyle: React.CSSProperties = {
   cursor: "pointer",
   background: "#111827",
   color: "#fff",
+};
+
+const secondaryButtonStyle: React.CSSProperties = {
+  width: "100%",
+  border: "1px solid #111827",
+  borderRadius: "14px",
+  padding: "0.95rem 1rem",
+  fontSize: "1rem",
+  fontWeight: 600,
+  cursor: "pointer",
+  background: "#fff",
+  color: "#111827",
 };
 
 const guideOverlayStyle: React.CSSProperties = {
@@ -320,9 +345,16 @@ const bottomTextStyle: React.CSSProperties = {
   fontSize: "0.98rem",
 };
 
-const inlineIconStyle: React.CSSProperties = {
+const shareIconStyle: React.CSSProperties = {
   display: "inline-block",
-  width: "1.15rem",
-  height: "1.15rem",
+  width: "1.35rem",
+  height: "1.35rem",
+  verticalAlign: "-0.2em",
+};
+
+const plusIconStyle: React.CSSProperties = {
+  display: "inline-block",
+  width: "1.10rem",
+  height: "1.10rem",
   verticalAlign: "-0.15em",
 };

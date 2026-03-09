@@ -1,1 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 200 200"><rect width="200" height="200" fill="url('#gradient')"></rect><defs><linearGradient id="gradient" gradientTransform="rotate(249 0.5 0.5)"><stop offset="0%" stop-color="#4a81e3"></stop><stop offset="100%" stop-color="#40e7f7"></stop></linearGradient></defs><g><g fill="#ebf1f7" transform="matrix(5.161626016260163,0,0,5.161626016260163,32.45918443016889,136.70341735932885)" stroke="#0e5278" stroke-width="0.65"><path d="M8.94 0L5.91-5.29L4.50-3.75L4.50 0L1.07 0L1.07-14.22L4.50-14.22L4.50-7.95L5.69-9.76L8.76-14.22L13.00-14.22L8.19-7.93L13.00 0L8.94 0ZM21.66-4.81L25.07-4.81Q25-3.33 24.27-2.19Q23.54-1.05 22.21-0.43Q20.89 0.20 19.19 0.20L19.19 0.20Q16.39 0.20 14.78-1.63Q13.16-3.46 13.16-6.79L13.16-6.79L13.16-7.49Q13.16-9.58 13.89-11.15Q14.62-12.71 15.99-13.57Q17.35-14.42 19.15-14.42L19.15-14.42Q21.74-14.42 23.31-13.06Q24.88-11.70 25.10-9.31L25.10-9.31L21.68-9.31Q21.64-10.61 21.03-11.17Q20.41-11.74 19.15-11.74L19.15-11.74Q17.87-11.74 17.28-10.78Q16.68-9.82 16.65-7.72L16.65-7.72L16.65-6.72Q16.65-4.44 17.22-3.47Q17.79-2.49 19.19-2.49L19.19-2.49Q20.37-2.49 21.00-3.05Q21.62-3.60 21.66-4.81L21.66-4.81Z"></path></g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">KeepCheck Business Check Draft</title>
+  <desc id="desc">Rounded app icon with a wide business-check outline and right-side checkmark.</desc>
+  <defs>
+    <style>
+      @font-face {
+        font-family: "OdinRoundedBold";
+        src: url("./fonts/OdinRounded-Bold.otf") format("opentype");
+        font-weight: 700;
+        font-style: normal;
+      }
+    </style>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="#0F172A"/>
+  <rect x="28" y="28" width="456" height="456" rx="108" fill="none" stroke="#A5B4FC" stroke-width="8" opacity="0.75"/>
+
+  <!-- Wide, short check card -->
+  <rect x="78" y="152" width="356" height="206" rx="28" fill="#F8FAFC"/>
+  <rect x="78" y="152" width="356" height="54" rx="28" fill="#E5E7EB"/>
+
+  <!-- Left-side details to imply a business check -->
+  <rect x="108" y="228" width="170" height="14" rx="7" fill="#CBD5E1"/>
+  <rect x="108" y="258" width="132" height="14" rx="7" fill="#CBD5E1"/>
+  <rect x="108" y="288" width="186" height="14" rx="7" fill="#CBD5E1"/>
+  <text x="166" y="132" text-anchor="middle" fill="#A5B4FC" font-size="46" font-family="OdinRoundedBold, Arial Rounded MT Bold, sans-serif" font-weight="700" letter-spacing="1">KEEP</text>
+  <text x="336" y="406" text-anchor="middle" fill="#A5B4FC" font-size="46" font-family="OdinRoundedBold, Arial Rounded MT Bold, sans-serif" font-weight="700" letter-spacing="1">CHECK</text>
+
+  <!-- Large cylindrical gold coins on the lower-left -->
+  <!-- Smaller coin behind -->
+  <ellipse cx="148" cy="355" rx="40" ry="11" fill="#92400E"/>
+  <rect x="108" y="337" width="80" height="18" rx="0" fill="#92400E"/>
+  <ellipse cx="148" cy="338" rx="40" ry="11" fill="#F59E0B"/>
+
+  <!-- Larger front coin -->
+  <ellipse cx="100" cy="375" rx="46" ry="13" fill="#B45309"/>
+  <rect x="54" y="353" width="92" height="22" rx="0" fill="#B45309"/>
+  <ellipse cx="100" cy="352" rx="46" ry="13" fill="#FBBF24"/>
+
+  <!-- Amount badge and right-side checkmark -->
+  <circle cx="360" cy="269" r="46" fill="#D1FAE5"/>
+  <path d="M334 271l16 16 36-36" fill="none" stroke="#16A34A" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
