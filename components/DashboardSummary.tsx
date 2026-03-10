@@ -1,5 +1,7 @@
 "use client";
 
+import { assetPath } from "@/lib/assetPath";
+
 type DashboardSummaryProps = {
   pendingCount: number;
   clearedCount: number;
@@ -103,7 +105,7 @@ export default function DashboardSummary({
           </svg>
         </div>
         <img
-          src="/cash.png"
+          src={assetPath("/cash.png")}
           alt=""
           aria-hidden="true"
           style={{
