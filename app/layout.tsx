@@ -7,7 +7,7 @@ import ScrollToTopOnRouteChange from "@/components/ScrollToTopOnRouteChange";
 const configuredBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const basePath =
   configuredBasePath === "/" ? "" : configuredBasePath.replace(/\/+$/, "");
-const siteOrigin = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://abdul-scripts.github.io";
+const siteOrigin = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://keepcheck.vercel.app/";
 const withBasePath = (path: string) => `${basePath}${path}`;
 const canonicalBase = withBasePath("/") || "/";
 
