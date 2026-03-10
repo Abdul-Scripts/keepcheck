@@ -1,6 +1,7 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import InstallPrompt from "@/components/InstallPrompt";
 import OnboardingForm from "@/components/OnboardingForm";
@@ -82,12 +83,37 @@ function mergeChecks(existing: CheckRecord[], incoming: CheckRecord[]) {
 }
 
 export default function ProfilePage() {
-  const { isReady, isStandalone, profile, setProfile, checks, setChecks } =
-    useKeepCheckApp();
+  const router = useRouter();
+  const {
+    isReady,
+    isStandalone,
+    bootstrapComplete,
+    profile,
+    setProfile,
+    checks,
+    setChecks,
+  } = useKeepCheckApp();
+
+  useEffect(() => {
+    if (!isReady || !isStandalone || !profile) return;
+    if (!bootstrapComplete) {
+      router.replace("/install/");
+    }
+  }, [isReady, isStandalone, profile, bootstrapComplete, router]);
 
   if (!isReady) return null;
   if (!isStandalone) return <InstallPrompt />;
-  if (!profile) return <OnboardingForm onComplete={setProfile} />;
+  if (!profile) {
+    return (
+      <OnboardingForm
+        onComplete={(nextProfile) => {
+          setProfile(nextProfile);
+          router.replace("/install/");
+        }}
+      />
+    );
+  }
+  if (!bootstrapComplete) return null;
 
   return (
     <ProfileEditor

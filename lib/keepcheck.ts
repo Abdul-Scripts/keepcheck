@@ -3,6 +3,8 @@ import { UserProfile } from "@/types/profile";
 
 export const CHECKS_STORAGE_KEY = "keepcheck-records";
 export const PROFILE_STORAGE_KEY = "keepcheck-profile";
+export const APP_BOOTSTRAP_STORAGE_KEY = "keepcheck-bootstrap-version";
+export const APP_BOOTSTRAP_VERSION = "1";
 
 export function detectStandaloneMode() {
   if (typeof window === "undefined") return false;
@@ -50,4 +52,14 @@ export function loadProfile(): UserProfile | null {
   } catch {
     return null;
   }
+}
+
+export function isBootstrapCurrent(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(APP_BOOTSTRAP_STORAGE_KEY) === APP_BOOTSTRAP_VERSION;
+}
+
+export function markBootstrapComplete(): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(APP_BOOTSTRAP_STORAGE_KEY, APP_BOOTSTRAP_VERSION);
 }

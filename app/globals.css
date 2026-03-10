@@ -224,6 +224,15 @@ body {
   }
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 body.camera-capture-open [data-bottom-nav] {
   opacity: 0;
   pointer-events: none;

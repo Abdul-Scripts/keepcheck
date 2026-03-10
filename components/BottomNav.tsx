@@ -5,11 +5,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Home", icon: HomeIcon },
+  { href: "/home", label: "Home", icon: HomeIcon },
   { href: "/checks/new", label: "New Check", icon: PlusCheckIcon },
   { href: "/checks", label: "All Checks", icon: ListIcon },
   { href: "/profile", label: "Profile", icon: UserIcon },
 ];
+
+function withTrailingSlash(path: string) {
+  return path === "/" ? "/" : `${path}/`;
+}
 
 export default function BottomNav() {
   const router = useRouter();
@@ -19,14 +23,14 @@ export default function BottomNav() {
       ? pathname.slice(0, -1)
       : pathname;
   const matchedNonHomeHref =
-    NAV_ITEMS.filter((item) => item.href !== "/").find(
+    NAV_ITEMS.filter((item) => item.href !== "/home").find(
       (item) =>
         normalizedPath === item.href || normalizedPath.startsWith(item.href + "/")
     )?.href ?? null;
 
   useEffect(() => {
     NAV_ITEMS.forEach((item) => {
-      router.prefetch(item.href);
+      router.prefetch(withTrailingSlash(item.href));
     });
   }, [router]);
 
@@ -35,7 +39,7 @@ export default function BottomNav() {
       <div style={baseFillStyle} />
       <div style={innerStyle}>
         {NAV_ITEMS.map((item) => {
-          const isHome = item.href === "/";
+          const isHome = item.href === "/home";
           const isActive = isHome
             ? matchedNonHomeHref === null
             : matchedNonHomeHref === item.href;
@@ -43,7 +47,7 @@ export default function BottomNav() {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={withTrailingSlash(item.href)}
               prefetch
               style={{
                 ...linkStyle,
