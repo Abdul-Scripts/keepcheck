@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const NAV_ITEMS = [
-  { href: "/home", label: "Home", icon: HomeIcon },
+  { href: "/", label: "Home", icon: HomeIcon },
   { href: "/checks/new", label: "New Check", icon: PlusCheckIcon },
   { href: "/checks", label: "All Checks", icon: ListIcon },
   { href: "/profile", label: "Profile", icon: UserIcon },
@@ -23,7 +23,7 @@ export default function BottomNav() {
       ? pathname.slice(0, -1)
       : pathname;
   const matchedNonHomeHref =
-    NAV_ITEMS.filter((item) => item.href !== "/home").find(
+    NAV_ITEMS.filter((item) => item.href !== "/").find(
       (item) =>
         normalizedPath === item.href || normalizedPath.startsWith(item.href + "/")
     )?.href ?? null;
@@ -39,7 +39,7 @@ export default function BottomNav() {
       <div style={baseFillStyle} />
       <div style={innerStyle}>
         {NAV_ITEMS.map((item) => {
-          const isHome = item.href === "/home";
+          const isHome = item.href === "/";
           const isActive = isHome
             ? matchedNonHomeHref === null
             : matchedNonHomeHref === item.href;
