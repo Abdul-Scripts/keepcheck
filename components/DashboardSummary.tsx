@@ -68,6 +68,7 @@ export default function DashboardSummary({
       >
         <div style={cardStyle}>
           <p style={labelStyle}>Pending Checks</p>
+          <a href="https://abdul-scripts.github.io/profile">View Profile</a>
           <h2 style={valueStyle}>{pendingCount}</h2>
         </div>
 
