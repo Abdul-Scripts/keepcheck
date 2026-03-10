@@ -19,7 +19,17 @@ export default function InstallBootstrapPage() {
   const [statusText, setStatusText] = useState("Preparing offline app…");
   const [hasError, setHasError] = useState(false);
   const [errorText, setErrorText] = useState("");
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const basePath = useMemo(() => {
+    const envBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+    if (envBasePath) return envBasePath;
+    if (typeof window === "undefined") return "";
+    const host = window.location.hostname;
+    const firstSegment = window.location.pathname.split("/").filter(Boolean)[0];
+    if (host.endsWith(".github.io") && firstSegment) {
+      return `/${firstSegment}`;
+    }
+    return "";
+  }, []);
   const shellUrls = useMemo(
     () => [
       `${basePath}/`,
@@ -49,8 +59,25 @@ export default function InstallBootstrapPage() {
           throw new Error("Service worker is not supported in this browser.");
         }
 
-        const registration = await navigator.serviceWorker.ready;
-        if (!registration.active && !registration.waiting && !registration.installing) {
+        // Ensure registration exists for this scope even if previous attempt failed.
+        await navigator.serviceWorker.register(`${basePath}/sw.js`, {
+          scope: `${basePath}/`,
+          updateViaCache: "none",
+        });
+
+        // Don't hang forever waiting for `ready` on flaky first-load installs.
+        const registration = await Promise.race([
+          navigator.serviceWorker.ready,
+          new Promise<null>((resolve) => {
+            window.setTimeout(() => resolve(null), 5000);
+          }),
+        ]);
+        if (
+          registration &&
+          !registration.active &&
+          !registration.waiting &&
+          !registration.installing
+        ) {
           throw new Error("Service worker is not active yet. Reload and try again.");
         }
 
@@ -95,6 +122,7 @@ export default function InstallBootstrapPage() {
     isReady,
     isStandalone,
     profile,
+    basePath,
     shellUrls,
     router,
     markBootstrapComplete,
@@ -193,4 +221,3 @@ const buttonStyle: React.CSSProperties = {
   fontSize: "0.92rem",
   cursor: "pointer",
 };
-
