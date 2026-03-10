@@ -63,9 +63,22 @@ self.addEventListener("fetch", (event) => {
   // route shell (or the root shell if no closer match exists).
   if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          // Cache a fresh copy of the page on each successful navigation
+      (async () => {
+        const isHomeRequest =
+          requestUrl.pathname === `${basePath}/` ||
+          requestUrl.pathname === `${basePath}/home/`;
+
+        // For home routes, use cache-first so offline never tries network if cached.
+        if (isHomeRequest) {
+          const cachedHome =
+            (await caches.match(event.request, { ignoreSearch: true })) ||
+            (await caches.match(`${basePath}/home/`)) ||
+            (await caches.match(`${basePath}/`));
+          if (cachedHome) return cachedHome;
+        }
+
+        try {
+          const networkResponse = await fetch(event.request);
           if (networkResponse && networkResponse.status === 200) {
             const clone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -73,14 +86,14 @@ self.addEventListener("fetch", (event) => {
             });
           }
           return networkResponse;
-        })
-        .catch(() => {
-          // Offline: try to match the exact URL, then fall back to root shell
+        } catch {
           return (
-            caches.match(event.request) ||
-            caches.match(`${basePath}/`)
+            (await caches.match(event.request, { ignoreSearch: true })) ||
+            (await caches.match(`${basePath}/home/`)) ||
+            (await caches.match(`${basePath}/`))
           );
-        })
+        }
+      })()
     );
     return;
   }
