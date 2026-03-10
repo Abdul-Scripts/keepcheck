@@ -4,9 +4,8 @@ const basePath = scopeUrl.pathname === "/" ? "" : scopeUrl.pathname.replace(/\/$
 const APP_SHELL = [
   `${basePath}/`,
   `${basePath}/manifest.webmanifest`,
-  `${basePath}/web-app-manifest-192x192.png`,
-  `${basePath}/web-app-manifest-512x512.png`,
-  `${basePath}/apple-touch-icon.png`,
+  `${basePath}/logo-kc-simple.svg`,
+  `${basePath}/logo.svg`,
 ];
 
 self.addEventListener("install", (event) => {

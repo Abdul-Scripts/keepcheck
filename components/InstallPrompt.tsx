@@ -16,6 +16,11 @@ export default function InstallPrompt() {
       !(window as Window & { MSStream?: unknown }).MSStream
     );
   });
+  const [isChromiumLike] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const ua = navigator.userAgent;
+    return /Chrome|CriOS|Edg|OPR|SamsungBrowser/i.test(ua);
+  });
 
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -55,6 +60,10 @@ export default function InstallPrompt() {
     }, 260);
   }
 
+  function handleRetryCheck() {
+    window.location.reload();
+  }
+
   const isIntro = step === "intro";
 
   return (
@@ -62,6 +71,9 @@ export default function InstallPrompt() {
       <div
         style={{
           ...backdropStyle,
+          background: isIntro ? backdropStyle.background : "transparent",
+          backdropFilter: "none",
+          WebkitBackdropFilter: "none",
           animation: isClosing
             ? "fadeOut 0.26s ease forwards"
             : "fadeIn 0.35s ease-out",
@@ -77,7 +89,7 @@ export default function InstallPrompt() {
               : "modalIn 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
-          <div style={iconStyle}>✓</div>
+          <img src="./logo.svg" alt="KeepCheck logo" style={introLogoStyle} />
 
           <h1 style={titleStyle}>Install KeepCheck</h1>
 
@@ -93,6 +105,16 @@ export default function InstallPrompt() {
             <button onClick={goToIosGuide} style={primaryButtonStyle}>
               Show Me How
             </button>
+          ) : isChromiumLike ? (
+            <>
+              <p style={textStyle}>
+                Chrome supports installation. Open the browser menu and choose
+                &apos;Install app&apos; (or &apos;Add to Home screen&apos;).
+              </p>
+              <button onClick={handleRetryCheck} style={secondaryButtonStyle}>
+                Refresh & Check Again
+              </button>
+            </>
           ) : (
             <p style={textStyle}>
               Open this in a supported browser that allows installation.
@@ -122,13 +144,13 @@ export default function InstallPrompt() {
               <img
                 src="./ios-share-icon.svg"
                 alt="Share"
-                style={inlineIconStyle}
+                style={shareIconStyle}
               />{" "}
               in Safari, then choose &apos;Add to Home Screen&apos;{" "}
               <img
                 src="./plus-square.svg"
                 alt="Add to Home Screen"
-                style={inlineIconStyle}
+                style={plusIconStyle}
               />
             </p>
           </div>
@@ -157,6 +179,9 @@ const screenStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  backgroundColor: "#DBEAFE",
+  background:
+    "radial-gradient(circle at 15% 20%, rgba(251, 191, 36, 0.22), transparent 40%), radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.2), transparent 35%), linear-gradient(155deg, #dbeafe 0%, #c7d2fe 35%, #bfdbfe 65%, #e2e8f0 100%)",
 };
 
 const backdropStyle: React.CSSProperties = {
@@ -174,25 +199,19 @@ const cardStyle: React.CSSProperties = {
   margin: "1rem",
   padding: "2rem 1.5rem",
   borderRadius: "24px",
-  background: "#ffffff",
+  background: "#DBEAFE",
   boxShadow: "0 20px 60px rgba(0,0,0,0.22)",
   textAlign: "center",
   opacity: 1,
   transform: "translateY(0) scale(1)",
 };
 
-const iconStyle: React.CSSProperties = {
+const introLogoStyle: React.CSSProperties = {
   width: "72px",
   height: "72px",
   margin: "0 auto 1rem auto",
   borderRadius: "20px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "2rem",
-  fontWeight: 700,
-  background: "linear-gradient(135deg, #111827, #374151)",
-  color: "#fff",
+  display: "block",
 };
 
 const titleStyle: React.CSSProperties = {
@@ -219,6 +238,18 @@ const primaryButtonStyle: React.CSSProperties = {
   cursor: "pointer",
   background: "#111827",
   color: "#fff",
+};
+
+const secondaryButtonStyle: React.CSSProperties = {
+  width: "100%",
+  border: "1px solid #111827",
+  borderRadius: "14px",
+  padding: "0.95rem 1rem",
+  fontSize: "1rem",
+  fontWeight: 600,
+  cursor: "pointer",
+  background: "#fff",
+  color: "#111827",
 };
 
 const guideOverlayStyle: React.CSSProperties = {
@@ -248,7 +279,7 @@ const guideLogoStyle: React.CSSProperties = {
 
 const guideIntroLineStyle: React.CSSProperties = {
   margin: 0,
-  color: "#ffffff",
+  color: "#0F172A",
   fontSize: "0.95rem",
   fontWeight: 600,
   textAlign: "center",
@@ -288,7 +319,7 @@ const arrowContainerStyle: React.CSSProperties = {
 const arrowShaftStyle: React.CSSProperties = {
   width: "4px",
   height: "80px",
-  background: "#ffffff",
+  background: "#0F172A",
   borderRadius: "999px",
 };
 
@@ -298,7 +329,7 @@ const arrowHeadStyle: React.CSSProperties = {
   left: "50%",
   borderLeft: "12px solid transparent",
   borderRight: "12px solid transparent",
-  borderTop: "18px solid #ffffff",
+  borderTop: "18px solid #0F172A",
   marginTop: "-2px",
 };
 
@@ -315,14 +346,21 @@ const bottomInstructionStyle: React.CSSProperties = {
 const bottomTextStyle: React.CSSProperties = {
   margin: 0,
   textAlign: "center",
-  color: "#ffffff",
+  color: "#0F172A",
   lineHeight: 1.5,
   fontSize: "0.98rem",
 };
 
-const inlineIconStyle: React.CSSProperties = {
+const shareIconStyle: React.CSSProperties = {
   display: "inline-block",
-  width: "1.15rem",
-  height: "1.15rem",
+  width: "1.35rem",
+  height: "1.35rem",
+  verticalAlign: "-0.2em",
+};
+
+const plusIconStyle: React.CSSProperties = {
+  display: "inline-block",
+  width: "1.10rem",
+  height: "1.10rem",
   verticalAlign: "-0.15em",
 };

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { UserProfile } from "@/types/profile";
 
 type OnboardingFormProps = {
@@ -13,6 +13,24 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
     name: "",
     businessName: "",
   });
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyOverscrollBehavior = body.style.overscrollBehavior;
+
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      body.style.overscrollBehavior = prevBodyOverscrollBehavior;
+    };
+  }, []);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -29,31 +47,13 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem",
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          width: "min(100%, 480px)",
-          display: "grid",
-          gap: "1rem",
-          padding: "2rem",
-          border: "1px solid #ddd",
-          borderRadius: 20,
-          background: "#fff",
-          boxShadow: "0 12px 32px rgba(0,0,0,0.08)",
-        }}
-      >
+    <main style={screenStyle}>
+      <form onSubmit={handleSubmit} style={cardStyle}>
         <div>
-          <h1 style={{ marginBottom: "0.5rem" }}>Welcome to KeepCheck</h1>
-          <p style={{ margin: 0, color: "#666" }}>
+          <h1 style={headingStyle}>
+            Welcome to <span style={keepCheckWordStyle}>KeepCheck</span>
+          </h1>
+          <p style={subtextStyle}>
             Let’s set up your workspace.
           </p>
         </div>
@@ -63,6 +63,7 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
           placeholder="Your Name"
           value={form.name}
           onChange={handleChange}
+          style={inputStyle}
           required
         />
 
@@ -71,11 +72,81 @@ export default function OnboardingForm({ onComplete }: OnboardingFormProps) {
           placeholder="Business Name"
           value={form.businessName}
           onChange={handleChange}
+          style={inputStyle}
           required
         />
 
-        <button type="submit">Continue</button>
+        <button type="submit" style={buttonStyle}>Continue</button>
       </form>
     </main>
   );
 }
+
+const screenStyle: React.CSSProperties = {
+  minHeight: "100dvh",
+  width: "100%",
+  boxSizing: "border-box",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "2rem",
+  background: "transparent",
+};
+
+const cardStyle: React.CSSProperties = {
+  width: "min(100%, 500px)",
+  display: "grid",
+  gap: "1rem",
+  padding: "2rem",
+  transform: "translateY(-5vh)",
+  border: "1px solid rgba(15, 23, 42, 0.12)",
+  borderRadius: 24,
+  background: "rgba(255, 255, 255, 0.92)",
+  boxShadow: "0 20px 46px rgba(15, 23, 42, 0.16)",
+  backdropFilter: "blur(6px)",
+  WebkitBackdropFilter: "blur(6px)",
+};
+
+const headingStyle: React.CSSProperties = {
+  margin: "0 0 0.5rem 0",
+  color: "#60A5FA",
+  fontSize: "1.75rem",
+  fontWeight: 800,
+  lineHeight: 1.2,
+};
+
+const keepCheckWordStyle: React.CSSProperties = {
+  color: "#0F172A",
+  fontSize: "2.35rem",
+  letterSpacing: "0.4px",
+};
+
+const subtextStyle: React.CSSProperties = {
+  margin: 0,
+  color: "#334155",
+  lineHeight: 1.5,
+  fontSize: "1rem",
+};
+
+const inputStyle: React.CSSProperties = {
+  border: "1px solid #94A3B8",
+  borderRadius: 12,
+  padding: "0.85rem 0.95rem",
+  background: "#ffffff",
+  color: "#0F172A",
+  fontSize: "1rem",
+  fontWeight: 500,
+  outline: "none",
+};
+
+const buttonStyle: React.CSSProperties = {
+  marginTop: "0.25rem",
+  border: "none",
+  borderRadius: 12,
+  padding: "0.9rem 1rem",
+  background: "linear-gradient(135deg, #0F172A, #1E293B)",
+  color: "#F8FAFC",
+  fontSize: "1rem",
+  fontWeight: 700,
+  cursor: "pointer",
+};

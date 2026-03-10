@@ -1,109 +1,74 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import CheckForm from "@/components/CheckForm";
-import CheckList from "@/components/CheckList";
+import BottomNav from "@/components/BottomNav";
 import DashboardSummary from "@/components/DashboardSummary";
 import InstallPrompt from "@/components/InstallPrompt";
+import MonitorChecks from "@/components/MonitorChecks";
 import OnboardingForm from "@/components/OnboardingForm";
-import { CheckRecord } from "@/types/check";
-import { UserProfile } from "@/types/profile";
+import PageTransition from "@/components/PageTransition";
+import { useKeepCheckApp } from "@/hooks/useKeepCheckApp";
 
-const CHECKS_STORAGE_KEY = "keepcheck-records";
-const PROFILE_STORAGE_KEY = "keepcheck-profile";
-
-function detectStandaloneMode() {
-  if (typeof window === "undefined") return false;
-
-  const nav = window.navigator as Navigator & { standalone?: boolean };
-  const displayModeStandalone =
-    window.matchMedia("(display-mode: standalone)").matches ||
-    window.matchMedia("(display-mode: fullscreen)").matches ||
-    window.matchMedia("(display-mode: minimal-ui)").matches ||
-    window.matchMedia("(display-mode: window-controls-overlay)").matches;
-
-  const launchedFromAndroidApp = document.referrer.startsWith("android-app://");
-  const launchedFromPwaStartUrl =
-    new URLSearchParams(window.location.search).get("source") === "pwa";
-
-  return (
-    displayModeStandalone ||
-    nav.standalone === true ||
-    launchedFromAndroidApp ||
-    launchedFromPwaStartUrl
-  );
-}
+const INTRO_HEADER_HEIGHT = 88;
+const INTRO_HIDE_SCROLL_THRESHOLD = 28;
+const INTRO_SHOW_SCROLL_THRESHOLD = 10;
 
 export default function Page() {
-  const [isReady, setIsReady] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
-
-  const [checks, setChecks] = useState<CheckRecord[]>(() => {
-    if (typeof window === "undefined") return [];
-
-    const saved = localStorage.getItem(CHECKS_STORAGE_KEY);
-    if (!saved) return [];
-
-    try {
-      return JSON.parse(saved) as CheckRecord[];
-    } catch {
-      return [];
-    }
-  });
-
-  const [profile, setProfile] = useState<UserProfile | null>(() => {
-    if (typeof window === "undefined") return null;
-
-    const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
-    if (!saved) return null;
-
-    try {
-      return JSON.parse(saved) as UserProfile;
-    } catch {
-      return null;
-    }
-  });
+  const { isReady, isStandalone, checks, setChecks, profile, setProfile } =
+    useKeepCheckApp();
+  const [isIntroHidden, setIsIntroHidden] = useState(false);
 
   useEffect(() => {
-    const standalone = detectStandaloneMode();
+    if (!isReady || !isStandalone || !profile) return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsStandalone(standalone);
-    setIsReady(true);
-  }, []);
+    const handleScroll = () => {
+      const currentScrollY = Math.max(0, window.scrollY);
+      setIsIntroHidden((prev) => {
+        if (!prev && currentScrollY >= INTRO_HIDE_SCROLL_THRESHOLD) return true;
+        if (prev && currentScrollY <= INTRO_SHOW_SCROLL_THRESHOLD) return false;
+        return prev;
+      });
+    };
 
-  useEffect(() => {
-    localStorage.setItem(CHECKS_STORAGE_KEY, JSON.stringify(checks));
-  }, [checks]);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
-  useEffect(() => {
-    if (!profile) return;
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
-  }, [profile]);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isReady, isStandalone, profile]);
 
-  function addCheck(check: CheckRecord) {
-    if (checks.some((c) => c.checkNumber === check.checkNumber)) {
-      alert("This check number already exists.");
-      return;
-    }
-
-    setChecks((prev) => [check, ...prev]);
-  }
-
-  function deleteCheck(id: string) {
-    setChecks((prev) => prev.filter((check) => check.id !== id));
+  function markCheckCleared(id: string) {
+    setChecks((prev) =>
+      prev.map((check) =>
+        check.id === id ? { ...check, status: "cleared" } : check
+      )
+    );
   }
 
   const pendingChecks = useMemo(
     () => checks.filter((check) => check.status !== "cleared"),
     [checks]
   );
+  const clearedChecks = useMemo(
+    () => checks.filter((check) => check.status === "cleared"),
+    [checks]
+  );
 
   const pendingCount = pendingChecks.length;
+  const clearedCount = clearedChecks.length;
 
   const pendingAmount = pendingChecks.reduce((sum, check) => {
     return sum + Number(check.amount || 0);
   }, 0);
+  const currentMonthLabel = useMemo(
+    () =>
+      new Date().toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      }),
+    []
+  );
 
   if (!isReady) return null;
 
@@ -116,19 +81,119 @@ export default function Page() {
   }
 
   return (
-    <main style={{ maxWidth: 900, margin: "0 auto", padding: "2rem" }}>
-      <header style={{ marginBottom: "1rem" }}>
-        <p style={{ margin: 0, color: "#666" }}>Welcome, {profile.name}</p>
-        <h1 style={{ margin: "0.25rem 0 0 0" }}>{profile.businessName}</h1>
-      </header>
+    <main style={screenStyle}>
+      <PageTransition>
+        <header style={introFixedStyle}>
+          <div
+            style={{
+              ...introInnerStyle,
+              opacity: 1,
+              pointerEvents: "auto",
+            }}
+          >
+            <p
+              style={{
+                ...welcomeLineStyle,
+                opacity: isIntroHidden ? 0 : 0.98,
+                transform: isIntroHidden
+                  ? "translateY(-20px) scale(0.93)"
+                  : "translateY(12px) scale(1)",
+                filter: isIntroHidden ? "blur(1.8px)" : "blur(0px)",
+              }}
+            >
+              Welcome, <span style={nameAccentStyle}>{profile.name}</span>
+            </p>
+          </div>
+        </header>
+        <div style={introSpacerStyle} />
 
-      <DashboardSummary
-        pendingCount={pendingCount}
-        pendingAmount={pendingAmount}
-      />
-
-      <CheckForm onAddCheck={addCheck} />
-      <CheckList checks={checks} onDelete={deleteCheck} />
+        <div style={contentStyle}>
+          <h1 style={businessNameStyle}>{profile.businessName}</h1>
+          <p style={monthLabelStyle}>{currentMonthLabel}</p>
+          <DashboardSummary
+            pendingCount={pendingCount}
+            clearedCount={clearedCount}
+            pendingAmount={pendingAmount}
+          />
+          <MonitorChecks checks={checks} onMarkCleared={markCheckCleared} />
+        </div>
+      </PageTransition>
+      <BottomNav />
     </main>
   );
 }
+
+const screenStyle: React.CSSProperties = {
+  minHeight: "100dvh",
+  width: "100%",
+  boxSizing: "border-box",
+  background: "transparent",
+};
+
+const introFixedStyle: React.CSSProperties = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: 40,
+  width: "100%",
+  background: "transparent",
+};
+
+const introInnerStyle: React.CSSProperties = {
+  maxWidth: 900,
+  margin: "0 auto",
+  padding: "1.35rem 1.25rem 0 1.25rem",
+  boxSizing: "border-box",
+  transition: "opacity 170ms cubic-bezier(0.22, 1, 0.36, 1)",
+  willChange: "opacity",
+};
+
+const introSpacerStyle: React.CSSProperties = {
+  height: INTRO_HEADER_HEIGHT,
+};
+
+const welcomeLineStyle: React.CSSProperties = {
+  margin: 0,
+  color: "#CBD5E1",
+  fontFamily: "OdinRoundedBold, Arial Rounded MT Bold, sans-serif",
+  fontSize: "2.05rem",
+  letterSpacing: "0.5px",
+  transition:
+    "opacity 240ms cubic-bezier(0.22, 1, 0.36, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1), filter 220ms ease",
+  willChange: "opacity, transform, filter",
+};
+
+const nameAccentStyle: React.CSSProperties = {
+  color: "#F8FAFC",
+  letterSpacing: "0.6px",
+};
+
+const businessNameStyle: React.CSSProperties = {
+  margin: "0.1rem 0 0.9rem 0",
+  color: "#0F172A",
+  fontFamily: "OdinRoundedBold, Arial Rounded MT Bold, sans-serif",
+  fontSize: "2.9rem",
+  letterSpacing: "0.8px",
+  lineHeight: 1.12,
+};
+
+const monthLabelStyle: React.CSSProperties = {
+  margin: "-0.45rem 0 0.95rem 0",
+  color: "#1E3A8A",
+  fontFamily: "OdinRoundedBold, Arial Rounded MT Bold, sans-serif",
+  fontSize: "1.02rem",
+  letterSpacing: "0.32px",
+};
+
+const contentStyle: React.CSSProperties = {
+  maxWidth: 900,
+  margin: "0 auto",
+  marginTop: "0.95rem",
+  marginBottom: 0,
+  padding: "1.2rem 1.25rem 12rem 1.25rem",
+  boxSizing: "border-box",
+  background:
+    "radial-gradient(circle at 15% 20%, rgba(251, 191, 36, 0.22), transparent 40%), radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.2), transparent 35%), linear-gradient(155deg, #dbeafe 0%, #c7d2fe 35%, #bfdbfe 65%, #e2e8f0 100%)",
+  borderRadius: 24,
+};
