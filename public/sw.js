@@ -1,4 +1,4 @@
-const CACHE_NAME = "keepcheck-v1";
+const CACHE_NAME = "keepcheck-v2";
 const scopeUrl = new URL(self.registration.scope);
 const basePath = scopeUrl.pathname === "/" ? "" : scopeUrl.pathname.replace(/\/$/, "");
 const APP_SHELL = [
@@ -22,7 +22,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (key.startsWith("keepcheck-") && key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
@@ -35,33 +35,29 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
+  // Always prefer network for navigation requests to avoid stale app shell.
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(`${basePath}/`))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(event.request)
-        .then((networkResponse) => {
-          if (
-            !networkResponse ||
-            networkResponse.status !== 200 ||
-            networkResponse.type !== "basic"
-          ) {
-            return networkResponse;
-          }
-
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (
+          networkResponse &&
+          networkResponse.status === 200 &&
+          networkResponse.type === "basic"
+        ) {
           const responseToCache = networkResponse.clone();
-
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
           });
-
-          return networkResponse;
-        })
-        .catch(() => {
-          return caches.match(`${basePath}/`);
-        });
-    })
+        }
+        return networkResponse;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
