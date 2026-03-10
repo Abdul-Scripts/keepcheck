@@ -16,6 +16,10 @@ import {
   captureVideoFrame,
   requestCameraStream,
 } from "@/lib/camera";
+import {
+  allowLandscapeOrientation,
+  releaseLandscapeOrientation,
+} from "@/lib/orientation";
 import { lockAppScroll, unlockAppScroll } from "@/lib/scrollLock";
 
 type CheckFormProps = {
@@ -194,9 +198,11 @@ export default function CheckForm({
 
   useEffect(() => {
     if (!isCameraOpen) return;
+    allowLandscapeOrientation();
     lockAppScroll();
     return () => {
       unlockAppScroll();
+      releaseLandscapeOrientation();
     };
   }, [isCameraOpen]);
 
@@ -551,8 +557,12 @@ export default function CheckForm({
                 type="button"
                 onClick={captureFromCamera}
                 style={captureButtonStyle}
+                aria-label="Capture photo"
               >
-                Capture
+                <svg viewBox="0 0 24 24" aria-hidden="true" style={captureIconStyle}>
+                  <path d="M7 9.5h10.5a2 2 0 0 1 2 2v5.5a2 2 0 0 1-2 2H6.5a2 2 0 0 1-2-2v-5.5a2 2 0 0 1 2-2h.8l1.1-1.8a1.2 1.2 0 0 1 1.03-.57h4.08a1.2 1.2 0 0 1 1.03.57l1.1 1.8" />
+                  <circle cx="12" cy="14.2" r="3.15" />
+                </svg>
               </button>
               <button type="button" onClick={stopCamera} style={cancelCameraStyle}>
                 Cancel
@@ -807,16 +817,43 @@ const checkGuideInnerStyle: React.CSSProperties = {
 };
 
 const cameraActionsStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "center",
-  gap: "0.5rem",
+  width: "100%",
+  display: "grid",
+  gridTemplateColumns: "1fr auto 1fr",
+  alignItems: "center",
+  columnGap: "0.75rem",
 };
 
 const captureButtonStyle: React.CSSProperties = {
-  ...cameraButtonStyle,
+  width: "4.4rem",
+  height: "4.4rem",
+  border: "2px solid #1E3A8A",
+  borderRadius: 999,
+  padding: 0,
+  display: "grid",
+  placeItems: "center",
+  gridColumn: 2,
+  background: "#FFFFFF",
+  color: "#1E3A8A",
+  cursor: "pointer",
+  boxShadow: "0 12px 28px rgba(30, 58, 138, 0.22)",
+};
+
+const captureIconStyle: React.CSSProperties = {
+  width: 32,
+  height: 32,
+  display: "block",
+  transform: "translateY(-1px)",
+  stroke: "currentColor",
+  fill: "none",
+  strokeWidth: 1.9,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
 };
 
 const cancelCameraStyle: React.CSSProperties = {
+  gridColumn: 3,
+  justifySelf: "start",
   border: "1px solid #93C5FD",
   borderRadius: 10,
   padding: "0.6rem 0.85rem",

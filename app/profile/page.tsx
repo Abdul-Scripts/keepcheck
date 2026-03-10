@@ -195,7 +195,6 @@ function ProfileEditor({
       const file = new File([blob], fileName, { type: "application/json" });
       const shareData: ShareData = {
         files: [file],
-        title: "KeepCheck Backup",
       };
 
       if (!nav.canShare || nav.canShare(shareData)) {

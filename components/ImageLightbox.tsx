@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import {
+  allowLandscapeOrientation,
+  releaseLandscapeOrientation,
+} from "@/lib/orientation";
 
 type ImageLightboxProps = {
   open: boolean;
@@ -25,10 +29,12 @@ export default function ImageLightbox({
       }
     };
 
+    allowLandscapeOrientation();
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      releaseLandscapeOrientation();
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -85,20 +91,23 @@ const backButtonStyle: React.CSSProperties = {
 };
 
 const imageViewportStyle: React.CSSProperties = {
-  width: "100%",
+  width: "min(100%, 1080px)",
   height: "100%",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  overflow: "hidden",
+  overflow: "visible",
   padding:
-    "3.2rem max(0.5rem, env(safe-area-inset-right)) 0.5rem max(0.5rem, env(safe-area-inset-left))",
+    "calc(max(3.2rem, env(safe-area-inset-top)) + 0.35rem) max(0.8rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(0.8rem, env(safe-area-inset-left))",
   boxSizing: "border-box",
 };
 
 const imageStyle: React.CSSProperties = {
-  maxWidth: "min(96vw, 980px)",
-  maxHeight: "min(90svh, 760px)",
+  display: "block",
+  width: "auto",
+  height: "auto",
+  maxWidth: "100%",
+  maxHeight: "100%",
   objectFit: "contain",
   borderRadius: 14,
   border: "1.5px solid rgba(147, 197, 253, 0.9)",

@@ -22,6 +22,10 @@ import {
   captureVideoFrame,
   requestCameraStream,
 } from "@/lib/camera";
+import {
+  allowLandscapeOrientation,
+  releaseLandscapeOrientation,
+} from "@/lib/orientation";
 import { lockAppScroll, unlockAppScroll } from "@/lib/scrollLock";
 import { CheckRecord } from "@/types/check";
 
@@ -523,9 +527,11 @@ export default function AllChecksPage() {
 
   useEffect(() => {
     if (!isEditCameraOpen) return;
+    allowLandscapeOrientation();
     lockAppScroll();
     return () => {
       unlockAppScroll();
+      releaseLandscapeOrientation();
     };
   }, [isEditCameraOpen]);
 
@@ -987,8 +993,12 @@ export default function AllChecksPage() {
                 type="button"
                 onClick={captureEditFromCamera}
                 style={captureButtonStyle}
+                aria-label="Capture photo"
               >
-                Capture
+                <svg viewBox="0 0 24 24" aria-hidden="true" style={captureIconStyle}>
+                  <path d="M7 9.5h10.5a2 2 0 0 1 2 2v5.5a2 2 0 0 1-2 2H6.5a2 2 0 0 1-2-2v-5.5a2 2 0 0 1 2-2h.8l1.1-1.8a1.2 1.2 0 0 1 1.03-.57h4.08a1.2 1.2 0 0 1 1.03.57l1.1 1.8" />
+                  <circle cx="12" cy="14.2" r="3.15" />
+                </svg>
               </button>
               <button
                 type="button"
@@ -1459,25 +1469,44 @@ const checkGuideInnerStyle: React.CSSProperties = {
 };
 
 const cameraActionsStyle: React.CSSProperties = {
-  display: "flex",
-  gap: "0.75rem",
-  justifyContent: "center",
+  width: "100%",
+  display: "grid",
+  gridTemplateColumns: "1fr auto 1fr",
+  columnGap: "0.85rem",
+  alignItems: "center",
   pointerEvents: "auto",
 };
 
 const captureButtonStyle: React.CSSProperties = {
-  border: "none",
+  width: "4.4rem",
+  height: "4.4rem",
+  border: "2px solid #1E3A8A",
   borderRadius: 999,
-  padding: "0.82rem 1.25rem",
-  background: "linear-gradient(135deg, #1E3A8A, #2563EB)",
-  color: "#F8FAFC",
-  fontFamily: "OdinRoundedBold, Arial Rounded MT Bold, sans-serif",
-  fontSize: "0.95rem",
+  padding: 0,
+  display: "grid",
+  placeItems: "center",
+  gridColumn: 2,
+  background: "#FFFFFF",
+  color: "#1E3A8A",
   cursor: "pointer",
-  boxShadow: "0 10px 24px rgba(30, 58, 138, 0.4)",
+  boxShadow: "0 12px 28px rgba(30, 58, 138, 0.22)",
+};
+
+const captureIconStyle: React.CSSProperties = {
+  width: 32,
+  height: 32,
+  display: "block",
+  transform: "translateY(-1px)",
+  stroke: "currentColor",
+  fill: "none",
+  strokeWidth: 1.9,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
 };
 
 const cancelCameraStyle: React.CSSProperties = {
+  gridColumn: 3,
+  justifySelf: "start",
   border: "1px solid rgba(191, 219, 254, 0.85)",
   borderRadius: 999,
   padding: "0.82rem 1.15rem",
