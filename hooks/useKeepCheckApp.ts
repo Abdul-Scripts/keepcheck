@@ -21,6 +21,8 @@ import {
 let hydratedClient = false;
 let checksCache: CheckRecord[] | null = null;
 let profileCache: UserProfile | null | undefined;
+let persistedChecksRef: CheckRecord[] | null = null;
+let persistedProfileRef: UserProfile | null = null;
 
 export function useKeepCheckApp() {
   const [isReady, setIsReady] = useState(() => hydratedClient);
@@ -57,6 +59,8 @@ export function useKeepCheckApp() {
 
       checksCache = loadedChecks;
       profileCache = loadedProfile;
+      persistedChecksRef = loadedChecks;
+      persistedProfileRef = loadedProfile;
       setChecks(loadedChecks);
       setProfile(loadedProfile);
       setBootstrapComplete(isBootstrapCurrent());
@@ -72,14 +76,18 @@ export function useKeepCheckApp() {
   useEffect(() => {
     checksCache = checks;
     if (!isReady) return;
+    if (checks === persistedChecksRef) return;
     localStorage.setItem(CHECKS_STORAGE_KEY, JSON.stringify(checks));
+    persistedChecksRef = checks;
   }, [checks, isReady]);
 
   useEffect(() => {
     profileCache = profile;
     if (!isReady) return;
     if (!profile) return;
+    if (profile === persistedProfileRef) return;
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+    persistedProfileRef = profile;
   }, [profile, isReady]);
 
   useEffect(() => {

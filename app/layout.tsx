@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import ScrollToTopOnRouteChange from "@/components/ScrollToTopOnRouteChange";
+import ConnectivityMode from "@/components/ConnectivityMode";
 
 const configuredBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const basePath =
@@ -60,6 +61,7 @@ export default function RootLayout({
       >
         <ServiceWorkerRegistration />
         <ScrollToTopOnRouteChange />
+        <ConnectivityMode />
         {children}
       </body>
     </html>
