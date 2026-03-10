@@ -143,6 +143,7 @@ export default function Page() {
             }}
           >
             <p
+              className="keepcheck-welcome-line"
               style={{
                 ...welcomeLineStyle,
                 opacity: isIntroHidden ? 0 : 0.98,
