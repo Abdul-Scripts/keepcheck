@@ -200,6 +200,11 @@ body.camera-capture-open [data-bottom-nav] {
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
+body.camera-capture-open {
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
 body {
   min-height: 100dvh;
   background: transparent;
