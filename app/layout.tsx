@@ -4,14 +4,9 @@ import "./globals.css";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import ScrollToTopOnRouteChange from "@/components/ScrollToTopOnRouteChange";
 
-const inferredRepoName = process.env.GITHUB_REPOSITORY?.split("/")[1];
-const configuredBasePath =
-  process.env.NEXT_PUBLIC_BASE_PATH ??
-  (inferredRepoName ? `/${inferredRepoName}` : "");
+const configuredBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const basePath =
-  configuredBasePath === "/"
-    ? ""
-    : configuredBasePath.replace(/\/+$/, "");
+  configuredBasePath === "/" ? "" : configuredBasePath.replace(/\/+$/, "");
 const siteOrigin = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://abdul-scripts.github.io";
 const withBasePath = (path: string) => `${basePath}${path}`;
 const canonicalBase = withBasePath("/") || "/";
