@@ -273,6 +273,7 @@ function ProfileEditor({
         <section style={contentStyle}>
           <h1 style={titleStyle}>Profile</h1>
           <p style={subtitleStyle}>Update your name and business details.</p>
+          <a href="abdul-scripts.github.io/keepcheck/home">home</a>
 
           <form onSubmit={handleSubmit} style={formStyle}>
             <label style={labelStyle}>
