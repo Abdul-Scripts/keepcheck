@@ -21,17 +21,7 @@ export default function InstallBootstrapPage() {
   const [statusText, setStatusText] = useState("Preparing offline app…");
   const [hasError, setHasError] = useState(false);
   const [errorText, setErrorText] = useState("");
-  const basePath = useMemo(() => {
-    const envBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-    if (envBasePath) return envBasePath;
-    if (typeof window === "undefined") return "";
-    const host = window.location.hostname;
-    const firstSegment = window.location.pathname.split("/").filter(Boolean)[0];
-    if (host.endsWith(".github.io") && firstSegment) {
-      return `/${firstSegment}`;
-    }
-    return "";
-  }, []);
+  const basePath = "";
   const shellRouteUrls = useMemo(
     () => [
       `${basePath}/`,

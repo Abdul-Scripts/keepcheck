@@ -3,13 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import ScrollToTopOnRouteChange from "@/components/ScrollToTopOnRouteChange";
+import ConnectivityMode from "@/components/ConnectivityMode";
 
-const configuredBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const basePath =
-  configuredBasePath === "/" ? "" : configuredBasePath.replace(/\/+$/, "");
 const siteOrigin = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://keepcheck.vercel.app/";
-const withBasePath = (path: string) => `${basePath}${path}`;
-const canonicalBase = withBasePath("/") || "/";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +21,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
   title: "KeepCheck",
   description: "Track and manage business checks",
-  manifest: withBasePath("/manifest.webmanifest"),
+  manifest: "/manifest.webmanifest",
   alternates: {
-    canonical: canonicalBase.endsWith("/") ? canonicalBase : `${canonicalBase}/`,
+    canonical: "/",
   },
   appleWebApp: {
     capable: true,
@@ -35,9 +31,9 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   icons: {
-    icon: withBasePath("/favicon.ico"),
-    shortcut: withBasePath("/favicon.ico"),
-    apple: withBasePath("/apple-touch-icon.png"),
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
 };
 
@@ -60,6 +56,7 @@ export default function RootLayout({
       >
         <ServiceWorkerRegistration />
         <ScrollToTopOnRouteChange />
+        <ConnectivityMode />
         {children}
       </body>
     </html>

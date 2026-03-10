@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -28,11 +27,14 @@ export default function BottomNav() {
         normalizedPath === item.href || normalizedPath.startsWith(item.href + "/")
     )?.href ?? null;
 
-  useEffect(() => {
-    NAV_ITEMS.forEach((item) => {
-      router.prefetch(withTrailingSlash(item.href));
-    });
-  }, [router]);
+  const prefetchRoute = (href: string) => {
+    if (typeof window === "undefined") return;
+    if (!navigator.onLine) return;
+    const key = `keepcheck-prefetched:${href}`;
+    if (sessionStorage.getItem(key) === "1") return;
+    router.prefetch(withTrailingSlash(href));
+    sessionStorage.setItem(key, "1");
+  };
 
   return (
     <nav style={navStyle} aria-label="Primary" data-bottom-nav>
@@ -48,7 +50,9 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={withTrailingSlash(item.href)}
-              prefetch
+              prefetch={false}
+              onMouseEnter={() => prefetchRoute(item.href)}
+              onTouchStart={() => prefetchRoute(item.href)}
               style={{
                 ...linkStyle,
                 ...(isActive ? activeLinkStyle : null),
@@ -115,8 +119,6 @@ const innerStyle: React.CSSProperties = {
   borderTopRightRadius: 22,
   padding: "0.85rem 0.75rem 0.9rem 0.75rem",
   background: "rgba(15, 23, 42, 0.96)",
-  backdropFilter: "blur(8px)",
-  WebkitBackdropFilter: "blur(8px)",
   border: "1px solid rgba(147, 197, 253, 0.45)",
   borderBottom: "none",
 };
@@ -148,7 +150,6 @@ const activeLinkStyle: React.CSSProperties = {
   color: "#F8FAFC",
   transform: "translateY(-3px)",
   opacity: 1,
-  animation: "navLiftIn 380ms cubic-bezier(0.2, 0.8, 0.2, 1)",
 };
 
 const iconWrapStyle: React.CSSProperties = {
@@ -166,7 +167,6 @@ const iconWrapStyle: React.CSSProperties = {
 const activeIconWrapStyle: React.CSSProperties = {
   transform: "scale(1.12)",
   opacity: 1,
-  animation: "navGrowIn 400ms cubic-bezier(0.2, 0.8, 0.2, 1)",
 };
 
 const labelStyle: React.CSSProperties = {

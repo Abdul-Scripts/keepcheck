@@ -127,46 +127,6 @@ body {
   }
 }
 
-@keyframes welcomeUserFlashIn {
-  0% {
-    opacity: 0.5;
-    transform: translate3d(0, 28px, 0) scale(0.96);
-    text-shadow: 0 0 0 rgba(147, 197, 253, 0);
-  }
-  60% {
-    opacity: 1;
-    transform: translate3d(0, -2px, 0) scale(1.025);
-    text-shadow: 0 0 8px rgba(147, 197, 253, 0.32);
-  }
-  100% {
-    opacity: 0.98;
-    transform: translate3d(0, 0, 0) scale(1);
-    text-shadow: 0 0 0 rgba(147, 197, 253, 0);
-  }
-}
-
-@keyframes keepcheckViewOldOut {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0.28;
-    transform: translateY(8px);
-  }
-}
-
-@keyframes keepcheckViewNewIn {
-  0% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes navLiftIn {
   0% {
     transform: translateY(0);
@@ -240,32 +200,20 @@ body.camera-capture-open [data-bottom-nav] {
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
-body.route-transitioning-down [data-page-transition-root] {
-  animation: pagePullDownOut 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-  will-change: transform, opacity;
-}
-
-@supports (view-transition-name: root) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation-duration: 420ms;
-    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  ::view-transition-old(root) {
-    animation-name: keepcheckViewOldOut;
-  }
-
-  ::view-transition-new(root) {
-    animation-name: keepcheckViewNewIn;
-  }
-}
-
 body {
   min-height: 100dvh;
   background: transparent;
   color: #0f172a;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Offline mode: keep motion minimal to reduce jank in installed PWAs. */
+body.is-offline *,
+body.is-offline *::before,
+body.is-offline *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 90ms !important;
 }
 
 h1,

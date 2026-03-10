@@ -124,7 +124,6 @@ export default function Page() {
                 transform: isIntroHidden
                   ? "translateY(-20px) scale(0.93)"
                   : "translateY(12px) scale(1)",
-                filter: isIntroHidden ? "blur(1.8px)" : "blur(0px)",
               }}
             >
               Welcome, <span style={nameAccentStyle}>{profile.name}</span>
@@ -186,8 +185,8 @@ const welcomeLineStyle: React.CSSProperties = {
   fontSize: "2.05rem",
   letterSpacing: "0.5px",
   transition:
-    "opacity 240ms cubic-bezier(0.22, 1, 0.36, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1), filter 220ms ease",
-  willChange: "opacity, transform, filter",
+    "opacity 210ms cubic-bezier(0.22, 1, 0.36, 1), transform 240ms cubic-bezier(0.16, 1, 0.3, 1)",
+  willChange: "opacity, transform",
 };
 
 const nameAccentStyle: React.CSSProperties = {
