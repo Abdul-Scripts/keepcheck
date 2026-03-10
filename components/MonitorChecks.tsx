@@ -159,7 +159,7 @@ export default function MonitorChecks({
       <div style={viewAllWrapStyle}>
         <button
           type="button"
-          onClick={() => router.push("/checks")}
+          onClick={() => router.push("/checks/")}
           style={viewAllButtonStyle}
         >
           View All Checks

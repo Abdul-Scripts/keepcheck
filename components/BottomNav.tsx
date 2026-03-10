@@ -11,6 +11,10 @@ const NAV_ITEMS = [
   { href: "/profile", label: "Profile", icon: UserIcon },
 ];
 
+function getRouteHref(path: string) {
+  return path === "/" ? "/" : `${path}/`;
+}
+
 export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname() ?? "/";
@@ -26,7 +30,7 @@ export default function BottomNav() {
 
   useEffect(() => {
     NAV_ITEMS.forEach((item) => {
-      router.prefetch(item.href);
+      router.prefetch(getRouteHref(item.href));
     });
   }, [router]);
 
@@ -43,7 +47,7 @@ export default function BottomNav() {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={getRouteHref(item.href)}
               prefetch
               style={{
                 ...linkStyle,
