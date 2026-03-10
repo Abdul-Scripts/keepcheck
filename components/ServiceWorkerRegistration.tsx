@@ -8,8 +8,10 @@ export default function ServiceWorkerRegistration() {
 
     const register = async () => {
       try {
-        await navigator.serviceWorker.register("sw.js", {
-          scope: "./",
+        const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+        await navigator.serviceWorker.register(`${basePath}/sw.js`, {
+          scope: `${basePath}/`,
+          updateViaCache: "none",
         });
         console.log("Service worker registered");
       } catch (error) {
