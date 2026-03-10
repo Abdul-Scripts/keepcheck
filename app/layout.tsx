@@ -4,8 +4,6 @@ import "./globals.css";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import ScrollToTopOnRouteChange from "@/components/ScrollToTopOnRouteChange";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -19,16 +17,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KeepCheck",
   description: "Track and manage business checks",
-  manifest: `${basePath}/manifest.webmanifest`,
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     title: "KeepCheck",
     statusBarStyle: "default",
   },
   icons: {
-    icon: "favicon.ico",
-    shortcut: "favicon.ico",
-    apple: "apple-touch-icon.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
 };
 
