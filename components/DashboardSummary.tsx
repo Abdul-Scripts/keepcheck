@@ -11,7 +11,7 @@ export default function DashboardSummary({
   clearedCount,
   pendingAmount,
 }: DashboardSummaryProps) {
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  // const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const formattedPendingAmount = pendingAmount.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
@@ -103,7 +103,7 @@ export default function DashboardSummary({
             <ellipse cx="28" cy="25" rx="18" ry="6.5" fill="#FFD25E" />
           </svg>
         </div>
-        <img
+        {/* <img
           src={`${basePath}/cash.png`}
           alt=""
           aria-hidden="true"
@@ -117,7 +117,7 @@ export default function DashboardSummary({
             pointerEvents: "none",
             userSelect: "none",
           }}
-        />
+        /> */}
       </div>
     </section>
   );
