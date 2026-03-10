@@ -267,11 +267,16 @@ export default function InstallBootstrapPage() {
 }
 
 const screenStyle: React.CSSProperties = {
-  minHeight: "100dvh",
-  width: "100%",
+  position: "fixed",
+  inset: 0,
+  width: "100vw",
+  minHeight: "100svh",
   display: "grid",
   placeItems: "center",
-  padding: "1.25rem",
+  paddingTop: "max(1.25rem, env(safe-area-inset-top))",
+  paddingRight: "1.25rem",
+  paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
+  paddingLeft: "1.25rem",
   boxSizing: "border-box",
   background:
     "radial-gradient(circle at 15% 20%, rgba(251, 191, 36, 0.22), transparent 40%), radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.2), transparent 35%), linear-gradient(155deg, #dbeafe 0%, #c7d2fe 35%, #bfdbfe 65%, #e2e8f0 100%)",

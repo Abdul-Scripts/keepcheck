@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckRecord } from "@/types/check";
 
 type CheckCardProps = {
@@ -15,96 +15,161 @@ export default function CheckCard({
   signatureName = "KeepCheck",
 }: CheckCardProps) {
   const [isImageOpen, setIsImageOpen] = useState(false);
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const statusIsCleared = check.status === "cleared";
   const displayDate = formatUsDate(check.issueDate);
   const displayAmount = formatCurrency(check.amount);
   const displayAmountWords = amountToWords(check.amount);
 
+  useEffect(() => {
+    if (!isImagePreviewOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const viewportMeta = document.querySelector(
+      'meta[name="viewport"]'
+    ) as HTMLMetaElement | null;
+    const previousViewportContent = viewportMeta?.content ?? null;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsImagePreviewOpen(false);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    if (viewportMeta) {
+      viewportMeta.content =
+        "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes";
+    }
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      if (viewportMeta && previousViewportContent) {
+        viewportMeta.content = previousViewportContent;
+      }
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isImagePreviewOpen]);
+
   return (
-    <article style={cardStyle}>
-      <div style={checkBodyStyle}>
-        <div style={checkTopRowStyle}>
-          <p style={recipientStyle}>{check.recipient}</p>
-          <p style={dateStyle}>{displayDate}</p>
-        </div>
-
-        <div style={checkMiddleRowStyle}>
-          <p style={amountWordsStyle}>{displayAmountWords}</p>
-          <p style={amountNumericStyle}>{displayAmount}</p>
-        </div>
-
-        <div style={checkBottomRowStyle}>
-          <p style={checkNumberStyle}>Check #{check.checkNumber}</p>
-
-          <div style={signatureWrapStyle}>
-            <p style={signatureTextStyle}>{signatureName}</p>
-            <span style={signatureLineStyle} />
+    <>
+      <article style={cardStyle}>
+        <div style={checkBodyStyle}>
+          <div style={checkTopRowStyle}>
+            <p style={recipientStyle}>{check.recipient}</p>
+            <p style={dateStyle}>{displayDate}</p>
           </div>
-        </div>
-      </div>
 
-      <div style={infoBlockStyle}>
-        <div style={metaRowStyle}>
-          <span
-            style={{
-              ...statusStyle,
-              ...(statusIsCleared ? clearedStatusStyle : pendingStatusStyle),
-            }}
-          >
-            {statusIsCleared ? "Cleared" : "Pending"}
-          </span>
-          <p style={memoStyle}>
-            <strong>Memo:</strong> {check.memo || "—"}
-          </p>
-        </div>
+          <div style={checkMiddleRowStyle}>
+            <p style={amountWordsStyle}>{displayAmountWords}</p>
+            <p style={amountNumericStyle}>{displayAmount}</p>
+          </div>
 
-        {check.image ? (
-          <div style={imageDetailsStyle}>
-            <button
-              type="button"
-              onClick={() => setIsImageOpen((prev) => !prev)}
-              style={imageToggleButtonStyle}
-              aria-expanded={isImageOpen}
-              aria-controls={`check-image-${check.id}`}
-            >
-              <span>Check Image</span>
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                style={{
-                  ...dropdownIconStyle,
-                  transform: isImageOpen ? "rotate(180deg)" : "rotate(0deg)",
-                }}
-              >
-                <path d="M7 10l5 5 5-5" />
-              </svg>
-            </button>
+          <div style={checkBottomRowStyle}>
+            <p style={checkNumberStyle}>Check #{check.checkNumber}</p>
 
-            <div
-              id={`check-image-${check.id}`}
-              style={{
-                ...imagePanelStyle,
-                maxHeight: isImageOpen ? 380 : 0,
-                opacity: isImageOpen ? 1 : 0,
-                marginTop: isImageOpen ? "0.6rem" : 0,
-              }}
-            >
-              <img
-                src={check.image}
-                alt={`Check ${check.checkNumber}`}
-                style={imageStyle}
-              />
+            <div style={signatureWrapStyle}>
+              <p style={signatureTextStyle}>{signatureName}</p>
+              <span style={signatureLineStyle} />
             </div>
           </div>
-        ) : null}
-      </div>
+        </div>
 
-      <div style={actionRowStyle}>
-        <button type="button" onClick={() => onEdit(check)} style={editButtonStyle}>
-          Edit
-        </button>
-      </div>
-    </article>
+        <div style={infoBlockStyle}>
+          <div style={metaRowStyle}>
+            <span
+              style={{
+                ...statusStyle,
+                ...(statusIsCleared ? clearedStatusStyle : pendingStatusStyle),
+              }}
+            >
+              {statusIsCleared ? "Cleared" : "Pending"}
+            </span>
+            <p style={memoStyle}>
+              <strong>Memo:</strong> {check.memo || "—"}
+            </p>
+          </div>
+
+          {check.image ? (
+            <div style={imageDetailsStyle}>
+              <button
+                type="button"
+                onClick={() => setIsImageOpen((prev) => !prev)}
+                style={imageToggleButtonStyle}
+                aria-expanded={isImageOpen}
+                aria-controls={`check-image-${check.id}`}
+              >
+                <span>Check Image</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  style={{
+                    ...dropdownIconStyle,
+                    transform: isImageOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  }}
+                >
+                  <path d="M7 10l5 5 5-5" />
+                </svg>
+              </button>
+
+              <div
+                id={`check-image-${check.id}`}
+                style={{
+                  ...imagePanelStyle,
+                  maxHeight: isImageOpen ? 380 : 0,
+                  opacity: isImageOpen ? 1 : 0,
+                  marginTop: isImageOpen ? "0.6rem" : 0,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsImagePreviewOpen(true)}
+                  style={imagePreviewButtonStyle}
+                  aria-label={`Open image preview for check ${check.checkNumber}`}
+                >
+                  <img
+                    src={check.image}
+                    alt={`Check ${check.checkNumber}`}
+                    style={imageStyle}
+                  />
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div style={actionRowStyle}>
+          <button type="button" onClick={() => onEdit(check)} style={editButtonStyle}>
+            Edit
+          </button>
+        </div>
+      </article>
+
+      {check.image && isImagePreviewOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={lightboxOverlayStyle}
+          onClick={() => setIsImagePreviewOpen(false)}
+        >
+          <div style={lightboxContentStyle} onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setIsImagePreviewOpen(false)}
+              style={lightboxCloseButtonStyle}
+              aria-label="Close image preview"
+            >
+              Close
+            </button>
+            <img
+              src={check.image}
+              alt={`Check ${check.checkNumber} enlarged preview`}
+              style={lightboxImageStyle}
+            />
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -408,6 +473,58 @@ const imageStyle: React.CSSProperties = {
   width: "min(100%, 340px)",
   borderRadius: 12,
   border: "1px solid #93C5FD",
+  display: "block",
+};
+
+const imagePreviewButtonStyle: React.CSSProperties = {
+  border: "none",
+  background: "transparent",
+  padding: 0,
+  cursor: "zoom-in",
+  borderRadius: 12,
+};
+
+const lightboxOverlayStyle: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  zIndex: 2200,
+  background: "rgba(2, 6, 23, 0.76)",
+  backdropFilter: "blur(2px)",
+  WebkitBackdropFilter: "blur(2px)",
+  display: "grid",
+  placeItems: "center",
+  padding: "1rem",
+  boxSizing: "border-box",
+};
+
+const lightboxContentStyle: React.CSSProperties = {
+  position: "relative",
+  width: "min(96vw, 900px)",
+  maxHeight: "92svh",
+  display: "grid",
+  justifyItems: "center",
+  gap: "0.7rem",
+};
+
+const lightboxCloseButtonStyle: React.CSSProperties = {
+  justifySelf: "end",
+  border: "1px solid rgba(191, 219, 254, 0.8)",
+  borderRadius: 999,
+  padding: "0.45rem 0.9rem",
+  background: "rgba(255,255,255,0.92)",
+  color: "#0F172A",
+  fontFamily: "OdinRoundedBold, Arial Rounded MT Bold, sans-serif",
+  fontSize: "0.86rem",
+  cursor: "pointer",
+};
+
+const lightboxImageStyle: React.CSSProperties = {
+  width: "100%",
+  maxHeight: "calc(92svh - 3rem)",
+  objectFit: "contain",
+  borderRadius: 14,
+  border: "1px solid rgba(147, 197, 253, 0.55)",
+  background: "#0F172A",
 };
 
 const actionRowStyle: React.CSSProperties = {

@@ -10,6 +10,12 @@ import {
 } from "react";
 import { CheckRecord } from "@/types/check";
 import { generateId } from "@/utils/id";
+import {
+  attachStreamToVideo,
+  captureVideoFrame,
+  requestCameraStream,
+} from "@/lib/camera";
+import { lockAppScroll, unlockAppScroll } from "@/lib/scrollLock";
 
 type CheckFormProps = {
   onAddCheck: (check: CheckRecord) => void;
@@ -42,6 +48,7 @@ export default function CheckForm({
   const recipientBlurTimerRef = useRef<number | null>(null);
   const checkNumberBlurTimerRef = useRef<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const guideFrameRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const normalizedRecipients = Array.from(
     new Set(
@@ -129,19 +136,16 @@ export default function CheckForm({
 
   async function startCamera() {
     setCameraError("");
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } },
-        audio: false,
-      });
+    stopCamera();
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError("Camera is not available on this device/browser.");
+      return;
+    }
 
+    try {
+      const stream = await requestCameraStream();
       streamRef.current = stream;
       setIsCameraOpen(true);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
     } catch {
       setCameraError("Camera access failed. Please allow camera permissions.");
       setIsCameraOpen(false);
@@ -162,17 +166,13 @@ export default function CheckForm({
   function captureFromCamera() {
     const video = videoRef.current;
     if (!video) return;
+    const captured = captureVideoFrame(video, guideFrameRef.current);
+    if (!captured) {
+      setCameraError("Capture failed. Please try again.");
+      return;
+    }
 
-    const canvas = document.createElement("canvas");
-    const width = video.videoWidth || 1280;
-    const height = video.videoHeight || 720;
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext("2d");
-    if (!context) return;
-
-    context.drawImage(video, 0, 0, width, height);
-    setImage(canvas.toDataURL("image/jpeg", 0.9));
+    setImage(captured);
     stopCamera();
   }
 
@@ -191,15 +191,27 @@ export default function CheckForm({
   }, []);
 
   useEffect(() => {
-    const body = document.body;
-    if (isCameraOpen) {
-      body.classList.add("camera-capture-open");
-    } else {
-      body.classList.remove("camera-capture-open");
-    }
+    if (!isCameraOpen) return;
+    lockAppScroll();
+    return () => {
+      unlockAppScroll();
+    };
+  }, [isCameraOpen]);
+
+  useEffect(() => {
+    if (!isCameraOpen) return;
+    const stream = streamRef.current;
+    const video = videoRef.current;
+    if (!stream || !video) return;
+
+    let active = true;
+    void attachStreamToVideo(video, stream).catch(() => {
+      if (!active) return;
+      setCameraError("Camera preview failed. Try closing and reopening camera.");
+    });
 
     return () => {
-      body.classList.remove("camera-capture-open");
+      active = false;
     };
   }, [isCameraOpen]);
 
@@ -486,11 +498,21 @@ export default function CheckForm({
       </div>
 
       {image && (
-        <img
-          src={image}
-          alt="Check preview"
-          style={previewStyle}
-        />
+        <div style={previewWrapStyle}>
+          <img
+            src={image}
+            alt="Check preview"
+            style={previewStyle}
+          />
+          <button
+            type="button"
+            onClick={() => setImage("")}
+            style={removePreviewButtonStyle}
+            aria-label="Remove attached image"
+          >
+            ×
+          </button>
+        </div>
       )}
 
       <button type="submit" style={saveButtonStyle}>
@@ -500,12 +522,18 @@ export default function CheckForm({
 
       {isCameraOpen ? (
         <div style={cameraOverlayStyle}>
-          <video ref={videoRef} playsInline muted style={cameraFullVideoStyle} />
+          <video
+            ref={videoRef}
+            playsInline
+            muted
+            autoPlay
+            style={cameraFullVideoStyle}
+          />
 
           <div style={cameraHudStyle}>
             <p style={cameraTitleStyle}>Align the check in the dotted frame</p>
 
-            <div style={checkGuideFrameStyle}>
+            <div ref={guideFrameRef} style={checkGuideFrameStyle}>
               <div style={checkGuideInnerStyle} />
             </div>
 
@@ -791,6 +819,29 @@ const previewStyle: React.CSSProperties = {
   width: "min(100%, 320px)",
   borderRadius: 12,
   border: "1px solid #93C5FD",
+};
+
+const previewWrapStyle: React.CSSProperties = {
+  position: "relative",
+  width: "min(100%, 320px)",
+};
+
+const removePreviewButtonStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "0.45rem",
+  right: "0.45rem",
+  width: "1.85rem",
+  height: "1.85rem",
+  border: "1px solid rgba(248, 113, 113, 0.65)",
+  borderRadius: 999,
+  background: "rgba(254, 226, 226, 0.94)",
+  color: "#B91C1C",
+  fontSize: "1.05rem",
+  lineHeight: 1,
+  display: "grid",
+  placeItems: "center",
+  cursor: "pointer",
+  boxShadow: "0 6px 14px rgba(185, 28, 28, 0.14)",
 };
 
 const saveButtonStyle: React.CSSProperties = {

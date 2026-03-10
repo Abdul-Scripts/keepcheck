@@ -17,6 +17,12 @@ import InstallPrompt from "@/components/InstallPrompt";
 import OnboardingForm from "@/components/OnboardingForm";
 import PageTransition from "@/components/PageTransition";
 import { useKeepCheckApp } from "@/hooks/useKeepCheckApp";
+import {
+  attachStreamToVideo,
+  captureVideoFrame,
+  requestCameraStream,
+} from "@/lib/camera";
+import { lockAppScroll, unlockAppScroll } from "@/lib/scrollLock";
 import { CheckRecord } from "@/types/check";
 
 export default function AllChecksPage() {
@@ -60,6 +66,7 @@ export default function AllChecksPage() {
   const editRecipientBlurTimerRef = useRef<number | null>(null);
   const editCheckNumberBlurTimerRef = useRef<number | null>(null);
   const editVideoRef = useRef<HTMLVideoElement>(null);
+  const editGuideFrameRef = useRef<HTMLDivElement>(null);
   const editStreamRef = useRef<MediaStream | null>(null);
   const [editForm, setEditForm] = useState({
     checkNumber: "",
@@ -362,6 +369,7 @@ export default function AllChecksPage() {
 
   async function startEditCamera() {
     setEditCameraError("");
+    stopEditCamera();
     if (!navigator.mediaDevices?.getUserMedia) {
       setEditCameraError(
         "Camera is not available in this browser. Please check permissions."
@@ -370,18 +378,9 @@ export default function AllChecksPage() {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } },
-        audio: false,
-      });
-
+      const stream = await requestCameraStream();
       editStreamRef.current = stream;
       setIsEditCameraOpen(true);
-
-      if (editVideoRef.current) {
-        editVideoRef.current.srcObject = stream;
-        await editVideoRef.current.play();
-      }
     } catch {
       setEditCameraError("Camera access failed. Please allow camera permissions.");
       setIsEditCameraOpen(false);
@@ -402,17 +401,13 @@ export default function AllChecksPage() {
   function captureEditFromCamera() {
     const video = editVideoRef.current;
     if (!video) return;
+    const captured = captureVideoFrame(video, editGuideFrameRef.current);
+    if (!captured) {
+      setEditCameraError("Capture failed. Please try again.");
+      return;
+    }
 
-    const canvas = document.createElement("canvas");
-    const width = video.videoWidth || 1280;
-    const height = video.videoHeight || 720;
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext("2d");
-    if (!context) return;
-
-    context.drawImage(video, 0, 0, width, height);
-    setEditImage(canvas.toDataURL("image/jpeg", 0.9));
+    setEditImage(captured);
     stopEditCamera();
   }
 
@@ -527,15 +522,29 @@ export default function AllChecksPage() {
   }, []);
 
   useEffect(() => {
-    const body = document.body;
-    if (isEditCameraOpen) {
-      body.classList.add("camera-capture-open");
-    } else {
-      body.classList.remove("camera-capture-open");
-    }
+    if (!isEditCameraOpen) return;
+    lockAppScroll();
+    return () => {
+      unlockAppScroll();
+    };
+  }, [isEditCameraOpen]);
+
+  useEffect(() => {
+    if (!isEditCameraOpen) return;
+    const stream = editStreamRef.current;
+    const video = editVideoRef.current;
+    if (!stream || !video) return;
+
+    let active = true;
+    void attachStreamToVideo(video, stream).catch(() => {
+      if (!active) return;
+      setEditCameraError(
+        "Camera preview failed. Try closing and reopening camera."
+      );
+    });
 
     return () => {
-      body.classList.remove("camera-capture-open");
+      active = false;
     };
   }, [isEditCameraOpen]);
 
@@ -574,9 +583,9 @@ export default function AllChecksPage() {
               aria-expanded={showFilters}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true" style={filterIconStyle}>
-                <path d="M4 6h16" />
-                <path d="M7 12h10" />
-                <path d="M10 18h4" />
+                <path d="M3 6h18" />
+                <path d="M5 12h14" />
+                <path d="M7 18h10" />
               </svg>
             </button>
           </div>
@@ -873,11 +882,26 @@ export default function AllChecksPage() {
                         <p style={editCameraErrorStyle}>{editCameraError}</p>
                       ) : null}
                       {editImage ? (
-                        <img
-                          src={editImage}
-                          alt={`Check ${editForm.checkNumber} preview`}
-                          style={editImagePreviewStyle}
-                        />
+                        <div style={editImagePreviewWrapStyle}>
+                          <img
+                            src={editImage}
+                            alt={`Check ${editForm.checkNumber} preview`}
+                            style={editImagePreviewStyle}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditImage("")}
+                            style={{
+                              ...editRemoveImageButtonStyle,
+                              opacity: isDeletingCard ? 0.55 : 1,
+                              cursor: isDeletingCard ? "not-allowed" : "pointer",
+                            }}
+                            disabled={isDeletingCard}
+                            aria-label="Remove attached image"
+                          >
+                            ×
+                          </button>
+                        </div>
                       ) : null}
                     </div>
 
@@ -947,13 +971,14 @@ export default function AllChecksPage() {
             ref={editVideoRef}
             playsInline
             muted
+            autoPlay
             style={cameraFullVideoStyle}
           />
 
           <div style={cameraHudStyle}>
             <p style={cameraTitleStyle}>Align the check in the dotted frame</p>
 
-            <div style={checkGuideFrameStyle}>
+            <div ref={editGuideFrameRef} style={checkGuideFrameStyle}>
               <div style={checkGuideInnerStyle} />
             </div>
 
@@ -1015,7 +1040,7 @@ const titleRowStyle: React.CSSProperties = {
 };
 
 const filterToggleButtonStyle: React.CSSProperties = {
-  width: 40,
+  width: 52,
   height: 40,
   border: "1px solid #93C5FD",
   borderRadius: 12,
@@ -1027,7 +1052,7 @@ const filterToggleButtonStyle: React.CSSProperties = {
 };
 
 const filterIconStyle: React.CSSProperties = {
-  width: 18,
+  width: 24,
   height: 18,
   stroke: "currentColor",
   fill: "none",
@@ -1291,6 +1316,28 @@ const editImagePreviewStyle: React.CSSProperties = {
   width: "min(100%, 280px)",
   borderRadius: 10,
   border: "1px solid #93C5FD",
+};
+
+const editImagePreviewWrapStyle: React.CSSProperties = {
+  position: "relative",
+  width: "min(100%, 280px)",
+};
+
+const editRemoveImageButtonStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "0.42rem",
+  right: "0.42rem",
+  width: "1.8rem",
+  height: "1.8rem",
+  border: "1px solid rgba(248, 113, 113, 0.65)",
+  borderRadius: 999,
+  background: "rgba(254, 226, 226, 0.94)",
+  color: "#B91C1C",
+  fontSize: "1rem",
+  lineHeight: 1,
+  display: "grid",
+  placeItems: "center",
+  boxShadow: "0 6px 14px rgba(185, 28, 28, 0.14)",
 };
 
 const editActionsStyle: React.CSSProperties = {
