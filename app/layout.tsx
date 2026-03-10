@@ -4,6 +4,7 @@ import "./globals.css";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import ScrollToTopOnRouteChange from "@/components/ScrollToTopOnRouteChange";
 import ConnectivityMode from "@/components/ConnectivityMode";
+import OrientationController from "@/components/OrientationController";
 
 const siteOrigin = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://keepcheck.vercel.app/";
 
@@ -57,6 +58,7 @@ export default function RootLayout({
         <ServiceWorkerRegistration />
         <ScrollToTopOnRouteChange />
         <ConnectivityMode />
+        <OrientationController />
         {children}
       </body>
     </html>
