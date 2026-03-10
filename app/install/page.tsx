@@ -14,6 +14,7 @@ export default function InstallBootstrapPage() {
     profile,
     setProfile,
     markBootstrapComplete,
+    markLaunchReady,
     bootstrapVersion,
   } = useKeepCheckApp();
   const [statusText, setStatusText] = useState("Preparing offline app…");
@@ -60,11 +61,20 @@ export default function InstallBootstrapPage() {
           throw new Error("Service worker is not supported in this browser.");
         }
 
-        // Ensure registration exists for this scope even if previous attempt failed.
-        await navigator.serviceWorker.register(`${basePath}/sw.js`, {
-          scope: `${basePath}/`,
-          updateViaCache: "none",
-        });
+        // Reuse existing SW registration when available (important for offline restarts).
+        const existingRegistration = await navigator.serviceWorker.getRegistration(
+          `${basePath}/`
+        );
+        if (existingRegistration) {
+          await existingRegistration.update().catch(() => {
+            // Ignore update failures when offline.
+          });
+        } else {
+          await navigator.serviceWorker.register(`${basePath}/sw.js`, {
+            scope: `${basePath}/`,
+            updateViaCache: "none",
+          });
+        }
 
         // Don't hang forever waiting for `ready` on flaky first-load installs.
         const registration = await Promise.race([
@@ -98,6 +108,7 @@ export default function InstallBootstrapPage() {
         );
 
         markBootstrapComplete();
+        markLaunchReady();
         if (cancelled) return;
         setStatusText(`Offline setup complete (v${bootstrapVersion}).`);
         window.setTimeout(() => {
@@ -127,6 +138,7 @@ export default function InstallBootstrapPage() {
     shellUrls,
     router,
     markBootstrapComplete,
+    markLaunchReady,
     bootstrapVersion,
   ]);
 
