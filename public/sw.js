@@ -1,4 +1,4 @@
-const CACHE_NAME = "keepcheck-v5";
+const CACHE_NAME = "keepcheck-v6";
 const scopeUrl = new URL(self.registration.scope);
 const basePath = scopeUrl.pathname === "/" ? "" : scopeUrl.pathname.replace(/\/$/, "");
 const LEGACY_NEW_CHECK_ROUTE = `${basePath}/checks/new/`;
@@ -25,6 +25,7 @@ const STATIC_ASSETS = [
 
 const APP_SHELL = Array.from(new Set([...APP_ROUTES, ...STATIC_ASSETS]));
 const APP_ROUTE_SET = new Set(APP_ROUTES);
+const isLikelyOnline = () => self.navigator?.onLine !== false;
 
 function normalizePath(pathname) {
   if (!pathname.startsWith(basePath || "/")) return pathname;
@@ -120,21 +121,23 @@ self.addEventListener("fetch", (event) => {
           (await caches.match(routeFallback, { ignoreSearch: true }));
         if (cachedRoute) {
           // Refresh in background when online, but do not block navigation.
-          event.waitUntil(
-            fetch(normalizedUrl)
-              .then((networkResponse) => {
-                if (networkResponse && networkResponse.status === 200) {
-                  const clone = networkResponse.clone();
-                  return caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(normalizedUrl, clone.clone());
-                    cache.put(normalizedPath, clone.clone());
-                    return cache.put(routeFallback, clone);
-                  });
-                }
-                return undefined;
-              })
-              .catch(() => undefined)
-          );
+          if (isLikelyOnline()) {
+            event.waitUntil(
+              fetch(normalizedUrl)
+                .then((networkResponse) => {
+                  if (networkResponse && networkResponse.status === 200) {
+                    const clone = networkResponse.clone();
+                    return caches.open(CACHE_NAME).then((cache) => {
+                      cache.put(normalizedUrl, clone.clone());
+                      cache.put(normalizedPath, clone.clone());
+                      return cache.put(routeFallback, clone);
+                    });
+                  }
+                  return undefined;
+                })
+                .catch(() => undefined)
+            );
+          }
           return cachedRoute;
         }
 
@@ -167,23 +170,25 @@ self.addEventListener("fetch", (event) => {
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
         // Refresh static/data assets in background when online.
-        event.waitUntil(
-          fetch(event.request)
-            .then((networkResponse) => {
-              if (
-                networkResponse &&
-                networkResponse.status === 200 &&
-                networkResponse.type === "basic"
-              ) {
-                const responseToCache = networkResponse.clone();
-                return caches.open(CACHE_NAME).then((cache) => {
-                  return cache.put(event.request, responseToCache);
-                });
-              }
-              return undefined;
-            })
-            .catch(() => undefined)
-        );
+        if (isLikelyOnline()) {
+          event.waitUntil(
+            fetch(event.request)
+              .then((networkResponse) => {
+                if (
+                  networkResponse &&
+                  networkResponse.status === 200 &&
+                  networkResponse.type === "basic"
+                ) {
+                  const responseToCache = networkResponse.clone();
+                  return caches.open(CACHE_NAME).then((cache) => {
+                    return cache.put(event.request, responseToCache);
+                  });
+                }
+                return undefined;
+              })
+              .catch(() => undefined)
+          );
+        }
         return cachedResponse;
       }
 

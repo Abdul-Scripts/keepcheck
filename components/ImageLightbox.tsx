@@ -1,10 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  allowLandscapeOrientation,
-  releaseLandscapeOrientation,
-} from "@/lib/orientation";
 
 type ImageLightboxProps = {
   open: boolean;
@@ -29,12 +25,10 @@ export default function ImageLightbox({
       }
     };
 
-    allowLandscapeOrientation();
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      releaseLandscapeOrientation();
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };

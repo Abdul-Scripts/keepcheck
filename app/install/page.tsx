@@ -7,7 +7,7 @@ import OnboardingForm from "@/components/OnboardingForm";
 import { useKeepCheckApp } from "@/hooks/useKeepCheckApp";
 
 export default function InstallBootstrapPage() {
-  const CACHE_NAME = "keepcheck-v5";
+  const CACHE_NAME = "keepcheck-v6";
   const router = useRouter();
   const {
     isReady,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import DashboardSummary from "@/components/DashboardSummary";
@@ -27,24 +27,49 @@ export default function Page() {
     setProfile,
   } = useKeepCheckApp();
   const [isIntroHidden, setIsIntroHidden] = useState(false);
+  const introScrollMarkerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isReady || !isStandalone || !profile) return;
 
-    const handleScroll = () => {
-      const currentScrollY = Math.max(0, window.scrollY);
+    let rafId: number | null = null;
+
+    const updateIntroVisibility = () => {
+      rafId = null;
+      const marker = introScrollMarkerRef.current;
+      if (!marker) return;
+
+      const markerTop = marker.getBoundingClientRect().top;
+      const scrolledDistance = Math.max(0, -markerTop);
       setIsIntroHidden((prev) => {
-        if (!prev && currentScrollY >= INTRO_HIDE_SCROLL_THRESHOLD) return true;
-        if (prev && currentScrollY <= INTRO_SHOW_SCROLL_THRESHOLD) return false;
+        if (!prev && scrolledDistance >= INTRO_HIDE_SCROLL_THRESHOLD) return true;
+        if (prev && scrolledDistance <= INTRO_SHOW_SCROLL_THRESHOLD) return false;
         return prev;
       });
     };
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    const scheduleUpdate = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(updateIntroVisibility);
+    };
+
+    scheduleUpdate();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    document.addEventListener("scroll", scheduleUpdate, {
+      passive: true,
+      capture: true,
+    });
+    window.addEventListener("resize", scheduleUpdate);
+    window.addEventListener("orientationchange", scheduleUpdate);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+      window.removeEventListener("scroll", scheduleUpdate);
+      document.removeEventListener("scroll", scheduleUpdate, true);
+      window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener("orientationchange", scheduleUpdate);
     };
   }, [isReady, isStandalone, profile]);
 
@@ -130,7 +155,7 @@ export default function Page() {
             </p>
           </div>
         </header>
-        <div style={introSpacerStyle} />
+        <div ref={introScrollMarkerRef} style={introSpacerStyle} />
 
         <div style={contentStyle}>
           <h1 style={businessNameStyle}>{profile.businessName}</h1>

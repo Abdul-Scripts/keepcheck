@@ -16,10 +16,6 @@ import {
   captureVideoFrame,
   requestCameraStream,
 } from "@/lib/camera";
-import {
-  allowLandscapeOrientation,
-  releaseLandscapeOrientation,
-} from "@/lib/orientation";
 import { lockAppScroll, unlockAppScroll } from "@/lib/scrollLock";
 
 type CheckFormProps = {
@@ -198,11 +194,9 @@ export default function CheckForm({
 
   useEffect(() => {
     if (!isCameraOpen) return;
-    allowLandscapeOrientation();
     lockAppScroll();
     return () => {
       unlockAppScroll();
-      releaseLandscapeOrientation();
     };
   }, [isCameraOpen]);
 
@@ -557,6 +551,7 @@ export default function CheckForm({
                 type="button"
                 onClick={captureFromCamera}
                 style={captureButtonStyle}
+                className="keepcheck-camera-action keepcheck-camera-capture"
                 aria-label="Capture photo"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" style={captureIconStyle}>
@@ -564,7 +559,12 @@ export default function CheckForm({
                   <circle cx="12" cy="14.2" r="3.15" />
                 </svg>
               </button>
-              <button type="button" onClick={stopCamera} style={cancelCameraStyle}>
+              <button
+                type="button"
+                onClick={stopCamera}
+                style={cancelCameraStyle}
+                className="keepcheck-camera-action keepcheck-camera-cancel"
+              >
                 Cancel
               </button>
             </div>
