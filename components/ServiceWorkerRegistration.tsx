@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { assetPath } from "@/lib/assetPath";
 
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
@@ -9,9 +8,8 @@ export default function ServiceWorkerRegistration() {
 
     const register = async () => {
       try {
-        const swUrl = assetPath("/sw.js");
-        await navigator.serviceWorker.register(swUrl, {
-          scope: assetPath("/") ,
+        await navigator.serviceWorker.register("sw.js", {
+          scope: "./",
         });
         console.log("Service worker registered");
       } catch (error) {
