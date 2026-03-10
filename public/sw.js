@@ -20,8 +20,19 @@ const APP_SHELL = Array.from(new Set([...APP_ROUTES, ...STATIC_ASSETS]));
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(APP_SHELL);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await Promise.allSettled(
+        APP_SHELL.map(async (url) => {
+          try {
+            const response = await fetch(url, { cache: "reload" });
+            if (response.ok) {
+              await cache.put(url, response.clone());
+            }
+          } catch {
+            // Ignore failed precache entries; runtime cache/fallback handles them.
+          }
+        })
+      );
     })
   );
   self.skipWaiting();
