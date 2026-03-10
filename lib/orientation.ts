@@ -1,5 +1,15 @@
+type OrientationLockValue =
+  | "any"
+  | "natural"
+  | "landscape"
+  | "portrait"
+  | "portrait-primary"
+  | "portrait-secondary"
+  | "landscape-primary"
+  | "landscape-secondary";
+
 type LockableScreenOrientation = ScreenOrientation & {
-  lock?: (orientation: OrientationLockType) => Promise<void>;
+  lock?: (orientation: OrientationLockValue) => Promise<void>;
   unlock?: () => void;
 };
 
