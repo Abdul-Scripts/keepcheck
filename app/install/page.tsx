@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import InstallPrompt from "@/components/InstallPrompt";
 import OnboardingForm from "@/components/OnboardingForm";
 import { useKeepCheckApp } from "@/hooks/useKeepCheckApp";
 
 export default function InstallBootstrapPage() {
+  const CACHE_NAME = "keepcheck-v5";
   const router = useRouter();
   const {
     isReady,
@@ -31,22 +32,78 @@ export default function InstallBootstrapPage() {
     }
     return "";
   }, []);
-  const shellUrls = useMemo(
+  const shellRouteUrls = useMemo(
     () => [
       `${basePath}/`,
       `${basePath}/home/`,
+      `${basePath}/install/`,
       `${basePath}/new-check/`,
-      `${basePath}/checks/`,
       `${basePath}/checks/new/`,
+      `${basePath}/checks/`,
       `${basePath}/profile/`,
+    ],
+    [basePath]
+  );
+  const staticUrls = useMemo(
+    () => [
       `${basePath}/manifest.webmanifest`,
       `${basePath}/logo.svg`,
       `${basePath}/logo-kc-simple.svg`,
       `${basePath}/web-app-manifest-192x192.png`,
       `${basePath}/web-app-manifest-512x512.png`,
+      `${basePath}/apple-touch-icon.png`,
+      `${basePath}/favicon.ico`,
       `${basePath}/cash.png`,
     ],
     [basePath]
+  );
+  const shellUrls = useMemo(
+    () => [...shellRouteUrls, ...staticUrls],
+    [shellRouteUrls, staticUrls]
+  );
+
+  const extractAssetUrlsFromHtml = useCallback(
+    (html: string) => {
+      const discovered = new Set<string>();
+      const regex = /(src|href)=["']([^"']+)["']/g;
+      let match: RegExpExecArray | null = null;
+      while ((match = regex.exec(html)) !== null) {
+        const raw = match[2];
+        if (!raw) continue;
+        if (!raw.startsWith("/") && !raw.startsWith(basePath + "/")) continue;
+        if (
+          raw.includes("/_next/") ||
+          raw.endsWith(".js") ||
+          raw.endsWith(".css") ||
+          raw.endsWith(".json") ||
+          raw.endsWith(".ico") ||
+          raw.endsWith(".png") ||
+          raw.endsWith(".svg") ||
+          raw.endsWith(".webmanifest")
+        ) {
+          discovered.add(raw);
+        }
+      }
+      return Array.from(discovered);
+    },
+    [basePath]
+  );
+
+  const hasCoreOfflineShell = useCallback(
+    async (cache: Cache) => {
+      const checks = await Promise.all(
+        shellRouteUrls.map(async (url) => {
+          const exact = await cache.match(url, { ignoreSearch: true });
+          if (exact) return exact;
+          if (url.endsWith("/") && url !== `${basePath}/`) {
+            return cache.match(url.slice(0, -1), { ignoreSearch: true });
+          }
+          return null;
+        })
+      );
+      return checks.every(Boolean);
+    },
+    [basePath, shellRouteUrls]
   );
 
   useEffect(() => {
@@ -92,27 +149,70 @@ export default function InstallBootstrapPage() {
           throw new Error("Service worker is not active yet. Reload and try again.");
         }
 
+        setStatusText("Verifying offline cache…");
+        const cache = await caches.open(CACHE_NAME);
+
+        // Offline-first: if core shell is already cached, proceed immediately.
+        const alreadyReady = await hasCoreOfflineShell(cache);
+        if (alreadyReady) {
+          markBootstrapComplete();
+          markLaunchReady();
+          if (!cancelled) {
+            setStatusText(`Offline cache ready (v${bootstrapVersion}).`);
+            window.setTimeout(() => {
+              router.replace("/");
+            }, 260);
+          }
+          return;
+        }
+
         setStatusText("Caching app pages for offline use…");
-        const cache = await caches.open("keepcheck-v2");
-        await Promise.all(
-          shellUrls.map(async (url) => {
+        const routeHtmls = await Promise.all(
+          shellRouteUrls.map(async (url) => {
+            try {
+              const response = await fetch(url, { cache: "reload" });
+              if (!response.ok) return null;
+              await cache.put(url, response.clone());
+              if (url.endsWith("/") && url !== `${basePath}/`) {
+                await cache.put(url.slice(0, -1), response.clone());
+              }
+              return await response.text();
+            } catch {
+              return null;
+            }
+          })
+        );
+
+        const discoveredAssets = new Set<string>(shellUrls);
+        routeHtmls.forEach((html) => {
+          if (!html) return;
+          extractAssetUrlsFromHtml(html).forEach((url) => discoveredAssets.add(url));
+        });
+
+        await Promise.allSettled(
+          Array.from(discoveredAssets).map(async (url) => {
             try {
               const response = await fetch(url, { cache: "reload" });
               if (response.ok) {
                 await cache.put(url, response.clone());
               }
             } catch {
-              // Ignore single-asset failures; app can still proceed.
+              // Allow partial failures during online warm-up.
             }
           })
         );
+
+        const isReadyOffline = await hasCoreOfflineShell(cache);
+        if (!isReadyOffline) {
+          throw new Error("Offline cache is incomplete. Please retry while online.");
+        }
 
         markBootstrapComplete();
         markLaunchReady();
         if (cancelled) return;
         setStatusText(`Offline setup complete (v${bootstrapVersion}).`);
         window.setTimeout(() => {
-          router.replace("/home/");
+          router.replace("/");
         }, 380);
       } catch (error) {
         if (cancelled) return;
@@ -136,6 +236,9 @@ export default function InstallBootstrapPage() {
     profile,
     basePath,
     shellUrls,
+    shellRouteUrls,
+    extractAssetUrlsFromHtml,
+    hasCoreOfflineShell,
     router,
     markBootstrapComplete,
     markLaunchReady,
