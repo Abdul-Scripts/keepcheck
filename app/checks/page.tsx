@@ -22,10 +22,6 @@ import {
   captureVideoFrame,
   requestCameraStream,
 } from "@/lib/camera";
-import {
-  allowLandscapeOrientation,
-  releaseLandscapeOrientation,
-} from "@/lib/orientation";
 import { lockAppScroll, unlockAppScroll } from "@/lib/scrollLock";
 import { CheckRecord } from "@/types/check";
 
@@ -527,11 +523,9 @@ export default function AllChecksPage() {
 
   useEffect(() => {
     if (!isEditCameraOpen) return;
-    allowLandscapeOrientation();
     lockAppScroll();
     return () => {
       unlockAppScroll();
-      releaseLandscapeOrientation();
     };
   }, [isEditCameraOpen]);
 
@@ -993,6 +987,7 @@ export default function AllChecksPage() {
                 type="button"
                 onClick={captureEditFromCamera}
                 style={captureButtonStyle}
+                className="keepcheck-camera-action keepcheck-camera-capture"
                 aria-label="Capture photo"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" style={captureIconStyle}>
@@ -1004,6 +999,7 @@ export default function AllChecksPage() {
                 type="button"
                 onClick={stopEditCamera}
                 style={cancelCameraStyle}
+                className="keepcheck-camera-action keepcheck-camera-cancel"
               >
                 Cancel
               </button>

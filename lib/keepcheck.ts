@@ -4,7 +4,7 @@ import { UserProfile } from "@/types/profile";
 export const CHECKS_STORAGE_KEY = "keepcheck-records";
 export const PROFILE_STORAGE_KEY = "keepcheck-profile";
 export const APP_BOOTSTRAP_STORAGE_KEY = "keepcheck-bootstrap-version";
-export const APP_BOOTSTRAP_VERSION = "1";
+export const APP_BOOTSTRAP_VERSION = "2";
 export const APP_LAUNCH_SESSION_KEY = "keepcheck-launch-ready";
 
 export function detectStandaloneMode() {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -27,14 +28,56 @@ export default function BottomNav() {
         normalizedPath === item.href || normalizedPath.startsWith(item.href + "/")
     )?.href ?? null;
 
-  const prefetchRoute = (href: string) => {
+  const prefetchRoute = useCallback((href: string) => {
     if (typeof window === "undefined") return;
-    if (!navigator.onLine) return;
     const key = `keepcheck-prefetched:${href}`;
     if (sessionStorage.getItem(key) === "1") return;
-    router.prefetch(withTrailingSlash(href));
-    sessionStorage.setItem(key, "1");
-  };
+    try {
+      router.prefetch(withTrailingSlash(href));
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // Ignore prefetch failures; navigation still works.
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const warmupKey = "keepcheck-prefetch-warmup:v2";
+    if (sessionStorage.getItem(warmupKey) === "1") return;
+    sessionStorage.setItem(warmupKey, "1");
+
+    const runWarmup = () => {
+      NAV_ITEMS.forEach((item) => {
+        prefetchRoute(item.href);
+      });
+    };
+
+    const requestIdle = (
+      window as Window & {
+        requestIdleCallback?: (
+          callback: IdleRequestCallback,
+          options?: IdleRequestOptions
+        ) => number;
+        cancelIdleCallback?: (handle: number) => void;
+      }
+    ).requestIdleCallback;
+
+    if (requestIdle) {
+      const handle = requestIdle(() => runWarmup(), { timeout: 1200 });
+      return () => {
+        (
+          window as Window & {
+            cancelIdleCallback?: (handle: number) => void;
+          }
+        ).cancelIdleCallback?.(handle);
+      };
+    }
+
+    const timeoutId = window.setTimeout(runWarmup, 180);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [prefetchRoute]);
 
   return (
     <nav style={navStyle} aria-label="Primary" data-bottom-nav>
@@ -52,7 +95,9 @@ export default function BottomNav() {
               href={withTrailingSlash(item.href)}
               prefetch={false}
               onMouseEnter={() => prefetchRoute(item.href)}
+              onFocus={() => prefetchRoute(item.href)}
               onTouchStart={() => prefetchRoute(item.href)}
+              onPointerDown={() => prefetchRoute(item.href)}
               style={{
                 ...linkStyle,
                 ...(isActive ? activeLinkStyle : null),
