@@ -18,6 +18,7 @@ export default function NewCheckPage() {
     isReady,
     isStandalone,
     bootstrapComplete,
+    launchNeedsBootstrap,
     checks,
     setChecks,
     profile,
@@ -97,10 +98,10 @@ export default function NewCheckPage() {
 
   useEffect(() => {
     if (!isReady || !isStandalone || !profile) return;
-    if (!bootstrapComplete) {
+    if (!bootstrapComplete || launchNeedsBootstrap) {
       router.replace("/install/");
     }
-  }, [isReady, isStandalone, profile, bootstrapComplete, router]);
+  }, [isReady, isStandalone, profile, bootstrapComplete, launchNeedsBootstrap, router]);
 
   if (!isReady) return null;
   if (!isStandalone) return <InstallPrompt />;
@@ -114,7 +115,7 @@ export default function NewCheckPage() {
       />
     );
   }
-  if (!bootstrapComplete) return null;
+  if (!bootstrapComplete || launchNeedsBootstrap) return null;
 
   return (
     <main style={screenStyle}>

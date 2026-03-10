@@ -6,12 +6,15 @@ import { UserProfile } from "@/types/profile";
 import {
   APP_BOOTSTRAP_STORAGE_KEY,
   APP_BOOTSTRAP_VERSION,
+  APP_LAUNCH_SESSION_KEY,
   CHECKS_STORAGE_KEY,
   detectStandaloneMode,
   isBootstrapCurrent,
+  isLaunchReady,
   loadChecks,
   loadProfile,
   markBootstrapComplete as persistBootstrapComplete,
+  markLaunchReady as persistLaunchReady,
   PROFILE_STORAGE_KEY,
 } from "@/lib/keepcheck";
 
@@ -35,6 +38,9 @@ export function useKeepCheckApp() {
   const [bootstrapComplete, setBootstrapComplete] = useState(() =>
     hydratedClient ? isBootstrapCurrent() : false
   );
+  const [launchNeedsBootstrap, setLaunchNeedsBootstrap] = useState(() =>
+    hydratedClient ? !isLaunchReady() : false
+  );
 
   useEffect(() => {
     const standalone = detectStandaloneMode();
@@ -54,6 +60,7 @@ export function useKeepCheckApp() {
       setChecks(loadedChecks);
       setProfile(loadedProfile);
       setBootstrapComplete(isBootstrapCurrent());
+      setLaunchNeedsBootstrap(!isLaunchReady());
       return;
     }
 
@@ -101,6 +108,7 @@ export function useKeepCheckApp() {
     isReady,
     isStandalone,
     bootstrapComplete,
+    launchNeedsBootstrap,
     checks,
     setChecks,
     profile,
@@ -112,8 +120,14 @@ export function useKeepCheckApp() {
     resetBootstrapComplete: () => {
       if (typeof window !== "undefined") {
         localStorage.removeItem(APP_BOOTSTRAP_STORAGE_KEY);
+        sessionStorage.removeItem(APP_LAUNCH_SESSION_KEY);
       }
       setBootstrapComplete(false);
+      setLaunchNeedsBootstrap(true);
+    },
+    markLaunchReady: () => {
+      persistLaunchReady();
+      setLaunchNeedsBootstrap(false);
     },
     bootstrapVersion: APP_BOOTSTRAP_VERSION,
   };

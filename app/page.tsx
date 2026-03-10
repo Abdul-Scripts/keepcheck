@@ -20,6 +20,7 @@ export default function Page() {
     isReady,
     isStandalone,
     bootstrapComplete,
+    launchNeedsBootstrap,
     checks,
     setChecks,
     profile,
@@ -81,10 +82,10 @@ export default function Page() {
 
   useEffect(() => {
     if (!isReady || !isStandalone || !profile) return;
-    if (!bootstrapComplete) {
+    if (!bootstrapComplete || launchNeedsBootstrap) {
       router.replace("/install/");
     }
-  }, [isReady, isStandalone, profile, bootstrapComplete, router]);
+  }, [isReady, isStandalone, profile, bootstrapComplete, launchNeedsBootstrap, router]);
 
   if (!isReady) return null;
 
@@ -103,7 +104,7 @@ export default function Page() {
     );
   }
 
-  if (!bootstrapComplete) return null;
+  if (!bootstrapComplete || launchNeedsBootstrap) return null;
 
   return (
     <main style={screenStyle}>
