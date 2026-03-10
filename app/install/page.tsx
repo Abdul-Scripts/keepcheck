@@ -34,6 +34,7 @@ export default function InstallBootstrapPage() {
     () => [
       `${basePath}/`,
       `${basePath}/home/`,
+      `${basePath}/new-check/`,
       `${basePath}/checks/`,
       `${basePath}/checks/new/`,
       `${basePath}/profile/`,
