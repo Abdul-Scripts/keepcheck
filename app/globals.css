@@ -1,19 +1,23 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "OdinRoundedBold";
+  src: url("/fonts/OdinRounded-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
+  min-height: 100%;
+  background-color: #ffffff;
 }
 
 @keyframes fadeIn {
@@ -68,8 +72,198 @@
   }
 }
 
+@keyframes navTabIn {
+  0% {
+    transform: translateY(1px) scale(0.992);
+    opacity: 0.92;
+  }
+  100% {
+    transform: translateY(-4px) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes navIconIn {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.07);
+    opacity: 1;
+  }
+}
+
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pagePullDownOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes pagePullUpIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes welcomeUserFlashIn {
+  0% {
+    opacity: 0.5;
+    transform: translate3d(0, 28px, 0) scale(0.96);
+    text-shadow: 0 0 0 rgba(147, 197, 253, 0);
+  }
+  60% {
+    opacity: 1;
+    transform: translate3d(0, -2px, 0) scale(1.025);
+    text-shadow: 0 0 8px rgba(147, 197, 253, 0.32);
+  }
+  100% {
+    opacity: 0.98;
+    transform: translate3d(0, 0, 0) scale(1);
+    text-shadow: 0 0 0 rgba(147, 197, 253, 0);
+  }
+}
+
+@keyframes keepcheckViewOldOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0.28;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes keepcheckViewNewIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes navLiftIn {
+  0% {
+    transform: translateY(0);
+    opacity: 0.94;
+  }
+  100% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+@keyframes navGrowIn {
+  0% {
+    transform: scale(1);
+    opacity: 0.92;
+  }
+  100% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+@keyframes keepcheckEditPanelExpand {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.94) scaleX(0.992);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1) scaleX(1);
+  }
+}
+
+@keyframes keepcheckEditDeleteOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: saturate(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.965);
+    filter: saturate(0.8);
+  }
+}
+
+@keyframes keepcheckEditPanelShrink {
+  0% {
+    opacity: 1;
+    transform: scaleY(1) scaleX(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(0.96) scaleX(0.995);
+  }
+}
+
+body.camera-capture-open [data-bottom-nav] {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(24px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+body.route-transitioning-down [data-page-transition-root] {
+  animation: pagePullDownOut 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  will-change: transform, opacity;
+}
+
+@supports (view-transition-name: root) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 420ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  ::view-transition-old(root) {
+    animation-name: keepcheckViewOldOut;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: keepcheckViewNewIn;
+  }
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  min-height: 100dvh;
+  background: transparent;
+  color: #0f172a;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "OdinRoundedBold", Arial Rounded MT Bold, Arial, sans-serif;
 }

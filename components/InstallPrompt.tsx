@@ -71,6 +71,9 @@ export default function InstallPrompt() {
       <div
         style={{
           ...backdropStyle,
+          background: isIntro ? backdropStyle.background : "transparent",
+          backdropFilter: "none",
+          WebkitBackdropFilter: "none",
           animation: isClosing
             ? "fadeOut 0.26s ease forwards"
             : "fadeIn 0.35s ease-out",
@@ -176,6 +179,9 @@ const screenStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  backgroundColor: "#DBEAFE",
+  background:
+    "radial-gradient(circle at 15% 20%, rgba(251, 191, 36, 0.22), transparent 40%), radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.2), transparent 35%), linear-gradient(155deg, #dbeafe 0%, #c7d2fe 35%, #bfdbfe 65%, #e2e8f0 100%)",
 };
 
 const backdropStyle: React.CSSProperties = {
@@ -193,7 +199,7 @@ const cardStyle: React.CSSProperties = {
   margin: "1rem",
   padding: "2rem 1.5rem",
   borderRadius: "24px",
-  background: "#ffffff",
+  background: "#DBEAFE",
   boxShadow: "0 20px 60px rgba(0,0,0,0.22)",
   textAlign: "center",
   opacity: 1,
@@ -273,7 +279,7 @@ const guideLogoStyle: React.CSSProperties = {
 
 const guideIntroLineStyle: React.CSSProperties = {
   margin: 0,
-  color: "#ffffff",
+  color: "#0F172A",
   fontSize: "0.95rem",
   fontWeight: 600,
   textAlign: "center",
@@ -313,7 +319,7 @@ const arrowContainerStyle: React.CSSProperties = {
 const arrowShaftStyle: React.CSSProperties = {
   width: "4px",
   height: "80px",
-  background: "#ffffff",
+  background: "#0F172A",
   borderRadius: "999px",
 };
 
@@ -323,7 +329,7 @@ const arrowHeadStyle: React.CSSProperties = {
   left: "50%",
   borderLeft: "12px solid transparent",
   borderRight: "12px solid transparent",
-  borderTop: "18px solid #ffffff",
+  borderTop: "18px solid #0F172A",
   marginTop: "-2px",
 };
 
@@ -340,7 +346,7 @@ const bottomInstructionStyle: React.CSSProperties = {
 const bottomTextStyle: React.CSSProperties = {
   margin: 0,
   textAlign: "center",
-  color: "#ffffff",
+  color: "#0F172A",
   lineHeight: 1.5,
   fontSize: "0.98rem",
 };
