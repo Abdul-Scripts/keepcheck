@@ -34,6 +34,10 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const requestUrl = new URL(event.request.url);
+  if (!["http:", "https:"].includes(requestUrl.protocol)) {
+    return;
+  }
 
   // Always prefer network for navigation requests to avoid stale app shell.
   if (event.request.mode === "navigate") {
