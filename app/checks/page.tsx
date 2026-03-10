@@ -1325,8 +1325,9 @@ const editImagePreviewWrapStyle: React.CSSProperties = {
 
 const editRemoveImageButtonStyle: React.CSSProperties = {
   position: "absolute",
-  top: "0.42rem",
-  right: "0.42rem",
+  top: "-0.5rem",
+  right: "-0.5rem",
+  zIndex: 2,
   width: "1.8rem",
   height: "1.8rem",
   border: "1px solid rgba(248, 113, 113, 0.65)",

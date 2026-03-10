@@ -10,6 +10,7 @@ import {
 } from "react";
 import { CheckRecord } from "@/types/check";
 import { generateId } from "@/utils/id";
+import ImageLightbox from "@/components/ImageLightbox";
 import {
   attachStreamToVideo,
   captureVideoFrame,
@@ -42,6 +43,7 @@ export default function CheckForm({
   const [isDateFocused, setIsDateFocused] = useState(false);
   const [isAmountFocused, setIsAmountFocused] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
   const [showRecipientSuggestions, setShowRecipientSuggestions] = useState(false);
   const [showCheckNumberSuggestion, setShowCheckNumberSuggestion] = useState(false);
@@ -499,11 +501,18 @@ export default function CheckForm({
 
       {image && (
         <div style={previewWrapStyle}>
-          <img
-            src={image}
-            alt="Check preview"
-            style={previewStyle}
-          />
+          <button
+            type="button"
+            onClick={() => setIsImagePreviewOpen(true)}
+            style={previewOpenButtonStyle}
+            aria-label="Open image preview"
+          >
+            <img
+              src={image}
+              alt="Check preview"
+              style={previewStyle}
+            />
+          </button>
           <button
             type="button"
             onClick={() => setImage("")}
@@ -551,6 +560,15 @@ export default function CheckForm({
             </div>
           </div>
         </div>
+      ) : null}
+
+      {image && isImagePreviewOpen ? (
+        <ImageLightbox
+          open={isImagePreviewOpen}
+          src={image}
+          alt="Check image enlarged preview"
+          onClose={() => setIsImagePreviewOpen(false)}
+        />
       ) : null}
     </>
   );
@@ -826,10 +844,21 @@ const previewWrapStyle: React.CSSProperties = {
   width: "min(100%, 320px)",
 };
 
+const previewOpenButtonStyle: React.CSSProperties = {
+  border: "none",
+  background: "transparent",
+  padding: 0,
+  width: "100%",
+  textAlign: "left",
+  cursor: "zoom-in",
+  borderRadius: 12,
+};
+
 const removePreviewButtonStyle: React.CSSProperties = {
   position: "absolute",
-  top: "0.45rem",
-  right: "0.45rem",
+  top: "-0.55rem",
+  right: "-0.55rem",
+  zIndex: 2,
   width: "1.85rem",
   height: "1.85rem",
   border: "1px solid rgba(248, 113, 113, 0.65)",
