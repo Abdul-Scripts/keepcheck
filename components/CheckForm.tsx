@@ -546,7 +546,7 @@ export default function CheckForm({
               <div style={checkGuideInnerStyle} />
             </div>
 
-            <div style={cameraActionsStyle}>
+            <div style={cameraActionsStyle} className="keepcheck-camera-actions">
               <button
                 type="button"
                 onClick={captureFromCamera}
