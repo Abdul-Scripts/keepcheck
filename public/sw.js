@@ -4,6 +4,7 @@ const basePath = scopeUrl.pathname === "/" ? "" : scopeUrl.pathname.replace(/\/$
 const APP_ROUTES = [
   `${basePath}/`,
   `${basePath}/home/`,
+  `${basePath}/new-check/`,
   `${basePath}/checks/`,
   `${basePath}/checks/new/`,
   `${basePath}/profile/`,
