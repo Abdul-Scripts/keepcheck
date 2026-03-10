@@ -1,7 +1,5 @@
 "use client";
 
-import { assetPath } from "@/lib/assetPath";
-
 type DashboardSummaryProps = {
   pendingCount: number;
   clearedCount: number;
@@ -13,6 +11,7 @@ export default function DashboardSummary({
   clearedCount,
   pendingAmount,
 }: DashboardSummaryProps) {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const formattedPendingAmount = pendingAmount.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
@@ -105,7 +104,7 @@ export default function DashboardSummary({
           </svg>
         </div>
         <img
-          src={assetPath("/cash.png")}
+          src={`${basePath}/cash.png`}
           alt=""
           aria-hidden="true"
           style={{

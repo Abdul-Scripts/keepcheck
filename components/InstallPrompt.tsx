@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { assetPath } from "@/lib/assetPath";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -90,7 +89,7 @@ export default function InstallPrompt() {
               : "modalIn 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
-          <img src={assetPath("/logo.svg")} alt="KeepCheck logo" style={introLogoStyle} />
+          <img src="./logo.svg" alt="KeepCheck logo" style={introLogoStyle} />
 
           <h1 style={titleStyle}>Install KeepCheck</h1>
 
@@ -132,7 +131,7 @@ export default function InstallPrompt() {
           }}
         >
           <div style={guideHeaderStyle}>
-            <img src={assetPath("/logo.svg")} alt="Keep Check logo" style={guideLogoStyle} />
+            <img src="./logo.svg" alt="Keep Check logo" style={guideLogoStyle} />
             <p style={guideIntroLineStyle}>
               KeepCheck helps you stay on top of daily checks without missing a
               step.
@@ -143,13 +142,13 @@ export default function InstallPrompt() {
             <p style={guideTextStyle}>
               Tap the Share button{" "}
               <img
-                src={assetPath("/ios-share-icon.svg")}
+                src="./ios-share-icon.svg"
                 alt="Share"
                 style={shareIconStyle}
               />{" "}
               in Safari, then choose &apos;Add to Home Screen&apos;{" "}
               <img
-                src={assetPath("/plus-square.svg")}
+                src="./plus-square.svg"
                 alt="Add to Home Screen"
                 style={plusIconStyle}
               />
