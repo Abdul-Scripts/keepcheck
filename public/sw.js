@@ -3,6 +3,7 @@ const scopeUrl = new URL(self.registration.scope);
 const basePath = scopeUrl.pathname === "/" ? "" : scopeUrl.pathname.replace(/\/$/, "");
 const APP_ROUTES = [
   `${basePath}/`,
+  `${basePath}/home/`,
   `${basePath}/checks/`,
   `${basePath}/checks/new/`,
   `${basePath}/profile/`,
@@ -15,7 +16,7 @@ const STATIC_ASSETS = [
   `${basePath}/logo.svg`,
 ];
 
-const APP_SHELL = [...APP_ROUTES, ...STATIC_ASSETS];
+const APP_SHELL = Array.from(new Set([...APP_ROUTES, ...STATIC_ASSETS]));
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -75,20 +76,26 @@ self.addEventListener("fetch", (event) => {
 
 
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        if (
-          networkResponse &&
-          networkResponse.status === 200 &&
-          networkResponse.type === "basic"
-        ) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return networkResponse;
-      })
-      .catch(() => caches.match(event.request))
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(event.request)
+        .then((networkResponse) => {
+          if (
+            networkResponse &&
+            networkResponse.status === 200 &&
+            networkResponse.type === "basic"
+          ) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(`${basePath}/home/`));
+    })
   );
 });

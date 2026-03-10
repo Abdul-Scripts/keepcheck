@@ -4,10 +4,14 @@ import { useEffect, useState } from "react";
 import { CheckRecord } from "@/types/check";
 import { UserProfile } from "@/types/profile";
 import {
+  APP_BOOTSTRAP_STORAGE_KEY,
+  APP_BOOTSTRAP_VERSION,
   CHECKS_STORAGE_KEY,
   detectStandaloneMode,
+  isBootstrapCurrent,
   loadChecks,
   loadProfile,
+  markBootstrapComplete as persistBootstrapComplete,
   PROFILE_STORAGE_KEY,
 } from "@/lib/keepcheck";
 
@@ -28,6 +32,9 @@ export function useKeepCheckApp() {
     if (profileCache !== undefined) return profileCache;
     return loadProfile();
   });
+  const [bootstrapComplete, setBootstrapComplete] = useState(() =>
+    hydratedClient ? isBootstrapCurrent() : false
+  );
 
   useEffect(() => {
     const standalone = detectStandaloneMode();
@@ -46,6 +53,7 @@ export function useKeepCheckApp() {
       profileCache = loadedProfile;
       setChecks(loadedChecks);
       setProfile(loadedProfile);
+      setBootstrapComplete(isBootstrapCurrent());
       return;
     }
 
@@ -92,9 +100,21 @@ export function useKeepCheckApp() {
   return {
     isReady,
     isStandalone,
+    bootstrapComplete,
     checks,
     setChecks,
     profile,
     setProfile,
+    markBootstrapComplete: () => {
+      persistBootstrapComplete();
+      setBootstrapComplete(true);
+    },
+    resetBootstrapComplete: () => {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(APP_BOOTSTRAP_STORAGE_KEY);
+      }
+      setBootstrapComplete(false);
+    },
+    bootstrapVersion: APP_BOOTSTRAP_VERSION,
   };
 }

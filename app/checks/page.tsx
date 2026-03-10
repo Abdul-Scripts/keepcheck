@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import CheckCard from "@/components/CheckCard";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -19,10 +20,18 @@ import { useKeepCheckApp } from "@/hooks/useKeepCheckApp";
 import { CheckRecord } from "@/types/check";
 
 export default function AllChecksPage() {
+  const router = useRouter();
   const EDIT_CLOSE_MS = 210;
   const DELETE_ANIMATION_MS = 260;
-  const { isReady, isStandalone, checks, setChecks, profile, setProfile } =
-    useKeepCheckApp();
+  const {
+    isReady,
+    isStandalone,
+    bootstrapComplete,
+    checks,
+    setChecks,
+    profile,
+    setProfile,
+  } = useKeepCheckApp();
   const [statusFilter, setStatusFilter] = useState<
     "all" | "pending" | "cleared"
   >("all");
@@ -529,9 +538,26 @@ export default function AllChecksPage() {
     };
   }, [isEditCameraOpen]);
 
+  useEffect(() => {
+    if (!isReady || !isStandalone || !profile) return;
+    if (!bootstrapComplete) {
+      router.replace("/install/");
+    }
+  }, [isReady, isStandalone, profile, bootstrapComplete, router]);
+
   if (!isReady) return null;
   if (!isStandalone) return <InstallPrompt />;
-  if (!profile) return <OnboardingForm onComplete={setProfile} />;
+  if (!profile) {
+    return (
+      <OnboardingForm
+        onComplete={(nextProfile) => {
+          setProfile(nextProfile);
+          router.replace("/install/");
+        }}
+      />
+    );
+  }
+  if (!bootstrapComplete) return null;
 
   return (
     <main style={screenStyle}>

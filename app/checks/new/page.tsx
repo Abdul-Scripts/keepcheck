@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import CheckForm from "@/components/CheckForm";
 import InstallPrompt from "@/components/InstallPrompt";
@@ -10,10 +11,18 @@ import { useKeepCheckApp } from "@/hooks/useKeepCheckApp";
 import { CheckRecord } from "@/types/check";
 
 export default function NewCheckPage() {
+  const router = useRouter();
   const BANNER_SHOW_MS = 2200;
   const BANNER_ANIMATION_MS = 240;
-  const { isReady, isStandalone, checks, setChecks, profile, setProfile } =
-    useKeepCheckApp();
+  const {
+    isReady,
+    isStandalone,
+    bootstrapComplete,
+    checks,
+    setChecks,
+    profile,
+    setProfile,
+  } = useKeepCheckApp();
   const existingRecipients = Array.from(
     new Set(
       checks
@@ -86,9 +95,26 @@ export default function NewCheckPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isReady || !isStandalone || !profile) return;
+    if (!bootstrapComplete) {
+      router.replace("/install/");
+    }
+  }, [isReady, isStandalone, profile, bootstrapComplete, router]);
+
   if (!isReady) return null;
   if (!isStandalone) return <InstallPrompt />;
-  if (!profile) return <OnboardingForm onComplete={setProfile} />;
+  if (!profile) {
+    return (
+      <OnboardingForm
+        onComplete={(nextProfile) => {
+          setProfile(nextProfile);
+          router.replace("/install/");
+        }}
+      />
+    );
+  }
+  if (!bootstrapComplete) return null;
 
   return (
     <main style={screenStyle}>
