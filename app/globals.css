@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "OdinRoundedBold";
-  src: url("/fonts/OdinRounded-Bold.otf") format("opentype");
+  src: url("./fonts/OdinRounded-Bold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
