@@ -210,3 +210,22 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const targetUrl = `${basePath}/`;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        const clientUrl = new URL(client.url);
+        if (clientUrl.origin === self.location.origin) {
+          client.focus();
+          client.navigate(targetUrl);
+          return;
+        }
+      }
+      return self.clients.openWindow(targetUrl);
+    })
+  );
+});
