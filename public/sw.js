@@ -211,10 +211,57 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
+self.addEventListener("push", (event) => {
+  let payload = {};
+
+  if (event.data) {
+    try {
+      payload = event.data.json();
+    } catch {
+      payload = {
+        body: event.data.text(),
+      };
+    }
+  }
+
+  const {
+    title = "KeepCheck Reminder",
+    body = "You have a pending check reminder.",
+    tag = "keepcheck-push",
+    url = `${basePath}/`,
+  } = payload;
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: `${basePath}/apple-touch-icon.png`,
+      badge: `${basePath}/web-app-manifest-192x192.png`,
+      tag,
+      data: {
+        url,
+      },
+    })
+  );
+});
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const targetUrl = `${basePath}/`;
+  const rawTarget =
+    event.notification &&
+    event.notification.data &&
+    typeof event.notification.data.url === "string"
+      ? event.notification.data.url
+      : `${basePath}/`;
+  let targetUrl = `${basePath}/`;
+  try {
+    const normalizedTarget = new URL(rawTarget, self.location.origin);
+    if (normalizedTarget.origin === self.location.origin) {
+      targetUrl = `${normalizedTarget.pathname}${normalizedTarget.search}${normalizedTarget.hash}`;
+    }
+  } catch {
+    targetUrl = `${basePath}/`;
+  }
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
