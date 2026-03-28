@@ -7,7 +7,6 @@ import InstallPrompt from "@/components/InstallPrompt";
 import OnboardingForm from "@/components/OnboardingForm";
 import PageTransition from "@/components/PageTransition";
 import {
-  checkPendingCheckRemindersNow,
   getDefaultTimedNotificationInput,
   ensureNotificationPermission,
   getNotificationPermissionStatus,
@@ -16,8 +15,12 @@ import {
   NotificationPermissionState,
   saveNotificationsEnabled,
   scheduleTimedTestNotification,
-  sendTestKeepCheckNotification,
 } from "@/lib/notifications";
+import {
+  sendServerTestPush,
+  subscribeAndSyncWebPush,
+  unsubscribeWebPush,
+} from "@/lib/web-push-client";
 import { useKeepCheckApp } from "@/hooks/useKeepCheckApp";
 import { CheckRecord } from "@/types/check";
 import { UserProfile } from "@/types/profile";
@@ -261,9 +264,14 @@ function ProfileEditor({
     const nextEnabled = e.target.checked;
 
     if (!nextEnabled) {
+      const unsubscribeResult = await unsubscribeWebPush();
       saveNotificationsEnabled(false);
       setNotificationsEnabled(false);
-      setNotificationNotice("Reminder notifications turned off.");
+      setNotificationNotice(
+        unsubscribeResult.ok
+          ? "Reminder notifications turned off."
+          : `Turned off locally, but cleanup failed: ${unsubscribeResult.error}`
+      );
       clearNotificationNoticeLater();
       return;
     }
@@ -290,14 +298,20 @@ function ProfileEditor({
       return;
     }
 
+    const subscribeResult = await subscribeAndSyncWebPush(checks, { force: true });
+    if (!subscribeResult.ok) {
+      saveNotificationsEnabled(false);
+      setNotificationsEnabled(false);
+      setNotificationNotice(
+        subscribeResult.error || "Unable to enable push reminders right now."
+      );
+      clearNotificationNoticeLater();
+      return;
+    }
+
     saveNotificationsEnabled(true);
     setNotificationsEnabled(true);
-    const sentNow = await checkPendingCheckRemindersNow();
-    setNotificationNotice(
-      sentNow > 0
-        ? `Notifications enabled. ${sentNow} reminder${sentNow === 1 ? "" : "s"} sent.`
-        : "Notifications enabled."
-    );
+    setNotificationNotice("Notifications enabled. Daily push reminders are active.");
     clearNotificationNoticeLater();
   }
 
@@ -322,11 +336,20 @@ function ProfileEditor({
       return;
     }
 
-    const sent = await sendTestKeepCheckNotification();
+    const subscribeResult = await subscribeAndSyncWebPush(checks, { force: true });
+    if (!subscribeResult.ok) {
+      setNotificationNotice(
+        subscribeResult.error || "Unable to prepare push subscription."
+      );
+      clearNotificationNoticeLater();
+      return;
+    }
+
+    const sent = await sendServerTestPush();
     setNotificationNotice(
-      sent
-        ? "Test notification sent."
-        : "Unable to send test notification on this device."
+      sent.ok
+        ? "Test push notification sent."
+        : sent.error || "Unable to send test push notification."
     );
     clearNotificationNoticeLater();
   }
