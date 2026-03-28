@@ -236,7 +236,6 @@ export async function sendTestKeepCheckNotification(): Promise<boolean> {
     icon: "/apple-touch-icon.png",
     badge: "/web-app-manifest-192x192.png",
     tag: "keepcheck-test",
-    renotify: true,
   });
 }
 
@@ -314,7 +313,6 @@ export async function checkScheduledTestNotificationsNow(): Promise<number> {
       icon: "/apple-touch-icon.png",
       badge: "/web-app-manifest-192x192.png",
       tag: `keepcheck-timed-test-${item.id}`,
-      renotify: true,
     });
 
     if (sent) {
@@ -366,7 +364,6 @@ export async function checkPendingCheckRemindersNow(): Promise<number> {
         icon: "/apple-touch-icon.png",
         badge: "/web-app-manifest-192x192.png",
         tag: `keepcheck-reminder-${check.id}-${check.issueDate}`,
-        renotify: false,
       }
     );
 
