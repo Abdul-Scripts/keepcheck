@@ -7,17 +7,14 @@ import InstallPrompt from "@/components/InstallPrompt";
 import OnboardingForm from "@/components/OnboardingForm";
 import PageTransition from "@/components/PageTransition";
 import {
-  getDefaultTimedNotificationInput,
   ensureNotificationPermission,
   getNotificationPermissionStatus,
   isNotificationApiSupported,
   loadNotificationsEnabled,
   NotificationPermissionState,
   saveNotificationsEnabled,
-  scheduleTimedTestNotification,
 } from "@/lib/notifications";
 import {
-  sendServerTestPush,
   subscribeAndSyncWebPush,
   unsubscribeWebPush,
 } from "@/lib/web-push-client";
@@ -165,17 +162,12 @@ function ProfileEditor({
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationPermissionState>("default");
-  const [timedTestDate, setTimedTestDate] = useState("");
-  const [timedTestTime, setTimedTestTime] = useState("");
   const [pendingImport, setPendingImport] = useState<BackupPayload | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setNotificationsEnabled(loadNotificationsEnabled());
     setNotificationPermission(getNotificationPermissionStatus());
-    const defaults = getDefaultTimedNotificationInput();
-    setTimedTestDate(defaults.date);
-    setTimedTestTime(defaults.time);
   }, []);
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -315,77 +307,6 @@ function ProfileEditor({
     clearNotificationNoticeLater();
   }
 
-  async function handleTestNotification() {
-    if (!isNotificationApiSupported()) {
-      setNotificationPermission("unsupported");
-      setNotificationNotice("Notifications are not supported on this device.");
-      clearNotificationNoticeLater();
-      return;
-    }
-
-    const permission = await ensureNotificationPermission();
-    setNotificationPermission(permission);
-
-    if (permission !== "granted") {
-      setNotificationNotice(
-        permission === "denied"
-          ? "Notifications are blocked in browser settings."
-          : "Notification permission is required for testing."
-      );
-      clearNotificationNoticeLater();
-      return;
-    }
-
-    const subscribeResult = await subscribeAndSyncWebPush(checks, { force: true });
-    if (!subscribeResult.ok) {
-      setNotificationNotice(
-        subscribeResult.error || "Unable to prepare push subscription."
-      );
-      clearNotificationNoticeLater();
-      return;
-    }
-
-    const sent = await sendServerTestPush();
-    setNotificationNotice(
-      sent.ok
-        ? "Test push notification sent."
-        : sent.error || "Unable to send test push notification."
-    );
-    clearNotificationNoticeLater();
-  }
-
-  async function handleScheduleTimedTestNotification() {
-    if (!isNotificationApiSupported()) {
-      setNotificationPermission("unsupported");
-      setNotificationNotice("Notifications are not supported on this device.");
-      clearNotificationNoticeLater();
-      return;
-    }
-
-    const permission = await ensureNotificationPermission();
-    setNotificationPermission(permission);
-
-    if (permission !== "granted") {
-      setNotificationNotice(
-        permission === "denied"
-          ? "Notifications are blocked in browser settings."
-          : "Notification permission is required for scheduled tests."
-      );
-      clearNotificationNoticeLater();
-      return;
-    }
-
-    const result = scheduleTimedTestNotification(timedTestDate, timedTestTime);
-    if (!result.ok) {
-      setNotificationNotice(result.error);
-      clearNotificationNoticeLater();
-      return;
-    }
-
-    setNotificationNotice(`Timed test scheduled for ${result.scheduledAt}.`);
-    clearNotificationNoticeLater();
-  }
-
   async function handleImportChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -491,44 +412,6 @@ function ProfileEditor({
                       : "Not requested"}
               </strong>
             </p>
-
-            <div style={timedTestGridStyle}>
-              <label style={compactLabelStyle}>
-                Date
-                <input
-                  type="date"
-                  value={timedTestDate}
-                  onChange={(e) => setTimedTestDate(e.target.value)}
-                  style={compactInputStyle}
-                />
-              </label>
-              <label style={compactLabelStyle}>
-                Time
-                <input
-                  type="time"
-                  value={timedTestTime}
-                  onChange={(e) => setTimedTestTime(e.target.value)}
-                  style={compactInputStyle}
-                />
-              </label>
-            </div>
-
-            <div style={transferActionsStyle}>
-              <button
-                type="button"
-                onClick={handleTestNotification}
-                style={secondaryButtonStyle}
-              >
-                Test Notification
-              </button>
-              <button
-                type="button"
-                onClick={handleScheduleTimedTestNotification}
-                style={secondaryButtonStyle}
-              >
-                Schedule Timed Test
-              </button>
-            </div>
 
             {notificationNotice ? (
               <p style={transferNoticeStyle}>{notificationNotice}</p>
@@ -757,31 +640,6 @@ const permissionHintStyle: React.CSSProperties = {
   margin: 0,
   color: "#334155",
   fontSize: "0.88rem",
-};
-
-const timedTestGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "0.55rem",
-};
-
-const compactLabelStyle: React.CSSProperties = {
-  display: "grid",
-  gap: "0.3rem",
-  color: "#1E293B",
-  fontFamily: "OdinRoundedBold, Arial Rounded MT Bold, sans-serif",
-  fontSize: "0.82rem",
-};
-
-const compactInputStyle: React.CSSProperties = {
-  border: "1px solid #93C5FD",
-  borderRadius: 10,
-  padding: "0.52rem 0.62rem",
-  background: "#FFFFFF",
-  color: "#0F172A",
-  fontSize: "0.9rem",
-  width: "100%",
-  boxSizing: "border-box",
 };
 
 const secondaryButtonStyle: React.CSSProperties = {

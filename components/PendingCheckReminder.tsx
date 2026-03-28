@@ -1,9 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  checkScheduledTestNotificationsNow,
-} from "@/lib/notifications";
 import { syncWebPushSubscriptionFromLocalChecks } from "@/lib/web-push-client";
 
 const REMINDER_POLL_MS = 60 * 1000;
@@ -11,7 +8,6 @@ const REMINDER_POLL_MS = 60 * 1000;
 export default function PendingCheckReminder() {
   useEffect(() => {
     const runCheck = () => {
-      void checkScheduledTestNotificationsNow();
       void syncWebPushSubscriptionFromLocalChecks();
     };
 
