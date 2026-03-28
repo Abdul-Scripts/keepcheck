@@ -105,7 +105,13 @@ export default function InstallBootstrapPage() {
       try {
         setStatusText("Checking service worker…");
         if (!("serviceWorker" in navigator)) {
-          throw new Error("Service worker is not supported in this browser.");
+          const currentOrigin = window.location.origin;
+          const secureHint = window.isSecureContext
+            ? ""
+            : " This origin is not secure (HTTP).";
+          throw new Error(
+            `Service worker is unavailable at ${currentOrigin}. Use HTTPS (or localhost) for install/offline testing.${secureHint}`
+          );
         }
 
         // Reuse existing SW registration when available (important for offline restarts).
