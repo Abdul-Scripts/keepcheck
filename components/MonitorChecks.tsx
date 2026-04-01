@@ -43,20 +43,8 @@ export default function MonitorChecks({
   const [dismissingIds, setDismissingIds] = useState<string[]>([]);
   const timeoutRefs = useRef<number[]>([]);
 
-  const now = new Date();
-  const currentMonthStart = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    1
-  ).getTime();
-
   const pendingChecks = checks
-    .filter((check) => {
-      if (check.status === "cleared") return false;
-      const issueDate = toLocalMidnight(check.issueDate);
-      if (!issueDate) return false;
-      return issueDate.getTime() >= currentMonthStart;
-    })
+    .filter((check) => check.status !== "cleared")
     .sort((a, b) => {
       const dateA = toLocalMidnight(a.issueDate);
       const dateB = toLocalMidnight(b.issueDate);
